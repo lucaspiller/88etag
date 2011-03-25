@@ -38,11 +38,13 @@ class Universe
   constructor: (options) ->
     @canvas = options?.canvas
     @masses = new MassStorage
+    @starfield = new Starfield
     @tick = 0
     @buildShip()
 
   start: ->
     @setupCanvas()
+    @starfield.generate @viewpoint
     @loop()
 
   setupCanvas: ->
@@ -66,6 +68,7 @@ class Universe
     ctx = @ctx
     ctx.clearRect 0, 0, @canvas.width, @canvas.height
     ctx.save()
+    @starfield.render ctx, @viewpoint
     @viewpoint.translate ctx
     @masses.render ctx
     ctx.restore()
@@ -93,8 +96,68 @@ class Universe
 
   remove: (mass) ->
     @masses.remove mass
-
 Gt.Universe = Universe
+
+class Star
+  STAR_RADIUS: 1.5
+
+  constructor: (options) ->
+    @position = options.position
+    @alpha = options.alpha
+
+  render: (ctx, viewpoint, MULT) ->
+    ctx.save()
+
+    x = @position.x - (viewpoint.position.x / (@position.z + 1))
+    y = @position.y - (viewpoint.position.y / (@position.z + 1))
+
+    # wrap stars
+    x -= Math.floor(x / (viewpoint.width * MULT)) * (viewpoint.width * MULT)
+    y -= Math.floor(y / (viewpoint.height * MULT)) * (viewpoint.height * MULT)
+
+    if y > viewpoint.height
+      y = y - viewpoint.height
+    else if y < 0
+      y = y + viewpoint.height
+
+    ctx.translate x, y
+
+    alpha = (1 - @position.z) / 2
+    ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'
+
+    ctx.beginPath()
+    ctx.arc 0, 0, @STAR_RADIUS, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.restore()
+Gt.Star = Star
+
+class Starfield
+  NUM_STARS: 100
+  MULT: 2
+
+  constructor: ->
+    @stars = []
+
+  generate: (viewpoint) ->
+    for i in [1..@NUM_STARS]
+      @stars.push new Star {
+        position: new Vector(
+          Math.random() * viewpoint.width * @MULT,
+          Math.random() * viewpoint.height * @MULT,
+          Math.random()
+        )
+      }
+
+  render: (ctx, viewpoint) ->
+    ctx.save()
+    ctx.translate 0, 0
+
+    @stars[star].render ctx, viewpoint, @MULT for star of @stars
+
+    ctx.restore()
+Gt.Starfield = Starfield
 
 class MassStorage
   constructor: ->
@@ -261,8 +324,9 @@ class Viewpoint
 
 class Vector
   # can pass either x, y coords or radians for a unit vector
-  constructor: (x, y) ->
+  constructor: (x, y, z) ->
     [@x, @y] = if y? then [x, y] else [Math.cos(x), Math.sin(x)]
+    @z = if z? then z else 0
     @x ||= 0
     @y ||= 0
     @_zeroSmall()
@@ -283,11 +347,12 @@ class Vector
     @times 1.0 / @length()
 
   clone: ->
-    new Vector @x, @y
+    new Vector @x, @y, @z
 
   _zeroSmall: ->
     @x = 0 if Math.abs(@x) < 0.01
     @y = 0 if Math.abs(@y) < 0.01
+    @z = 0 if Math.abs(@z) < 0.01
 Gt.Vector = Vector
 
 # initialize

@@ -1,5 +1,5 @@
 (function() {
-  var Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Universe, Vector, Viewpoint;
+  var Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -57,11 +57,13 @@
     function Universe(options) {
       this.canvas = options != null ? options.canvas : void 0;
       this.masses = new MassStorage;
+      this.starfield = new Starfield;
       this.tick = 0;
       this.buildShip();
     }
     Universe.prototype.start = function() {
       this.setupCanvas();
+      this.starfield.generate(this.viewpoint);
       return this.loop();
     };
     Universe.prototype.setupCanvas = function() {
@@ -89,6 +91,7 @@
       ctx = this.ctx;
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.save();
+      this.starfield.render(ctx, this.viewpoint);
       this.viewpoint.translate(ctx);
       this.masses.render(ctx);
       return ctx.restore();
@@ -123,6 +126,64 @@
     return Universe;
   })();
   Gt.Universe = Universe;
+  Star = (function() {
+    Star.prototype.STAR_RADIUS = 1.5;
+    function Star(options) {
+      this.position = options.position;
+      this.alpha = options.alpha;
+    }
+    Star.prototype.render = function(ctx, viewpoint, MULT) {
+      var alpha, x, y;
+      ctx.save();
+      x = this.position.x - (viewpoint.position.x / (this.position.z + 1));
+      y = this.position.y - (viewpoint.position.y / (this.position.z + 1));
+      x -= Math.floor(x / (viewpoint.width * MULT)) * (viewpoint.width * MULT);
+      y -= Math.floor(y / (viewpoint.height * MULT)) * (viewpoint.height * MULT);
+      if (y > viewpoint.height) {
+        y = y - viewpoint.height;
+      } else if (y < 0) {
+        y = y + viewpoint.height;
+      }
+      ctx.translate(x, y);
+      alpha = (1 - this.position.z) / 2;
+      ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')';
+      ctx.beginPath();
+      ctx.arc(0, 0, this.STAR_RADIUS, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+      return ctx.restore();
+    };
+    return Star;
+  })();
+  Gt.Star = Star;
+  Starfield = (function() {
+    Starfield.prototype.NUM_STARS = 100;
+    Starfield.prototype.MULT = 2;
+    function Starfield() {
+      this.stars = [];
+    }
+    Starfield.prototype.generate = function(viewpoint) {
+      var i, _ref, _results;
+      _results = [];
+      for (i = 1, _ref = this.NUM_STARS; (1 <= _ref ? i <= _ref : i >= _ref); (1 <= _ref ? i += 1 : i -= 1)) {
+        _results.push(this.stars.push(new Star({
+          position: new Vector(Math.random() * viewpoint.width * this.MULT, Math.random() * viewpoint.height * this.MULT, Math.random())
+        })));
+      }
+      return _results;
+    };
+    Starfield.prototype.render = function(ctx, viewpoint) {
+      var star;
+      ctx.save();
+      ctx.translate(0, 0);
+      for (star in this.stars) {
+        this.stars[star].render(ctx, viewpoint, this.MULT);
+      }
+      return ctx.restore();
+    };
+    return Starfield;
+  })();
+  Gt.Starfield = Starfield;
   MassStorage = (function() {
     function MassStorage() {
       this.items = {};
@@ -324,9 +385,10 @@
     return Viewpoint;
   })();
   Vector = (function() {
-    function Vector(x, y) {
+    function Vector(x, y, z) {
       var _ref;
       _ref = y != null ? [x, y] : [Math.cos(x), Math.sin(x)], this.x = _ref[0], this.y = _ref[1];
+      this.z = z != null ? z : 0;
       this.x || (this.x = 0);
       this.y || (this.y = 0);
       this._zeroSmall();
@@ -347,14 +409,17 @@
       return this.times(1.0 / this.length());
     };
     Vector.prototype.clone = function() {
-      return new Vector(this.x, this.y);
+      return new Vector(this.x, this.y, this.z);
     };
     Vector.prototype._zeroSmall = function() {
       if (Math.abs(this.x) < 0.01) {
         this.x = 0;
       }
       if (Math.abs(this.y) < 0.01) {
-        return this.y = 0;
+        this.y = 0;
+      }
+      if (Math.abs(this.z) < 0.01) {
+        return this.z = 0;
       }
     };
     return Vector;
