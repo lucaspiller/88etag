@@ -35,6 +35,8 @@ class Controller
 Gt.Controller = Controller
 
 class Universe
+  LOOP_TARGET = 1000/24
+
   constructor: (options) ->
     @canvas = options?.canvas
     @masses = new MassStorage
@@ -54,9 +56,16 @@ class Universe
     @ctx.strokeStyle = 'rgb(255, 255, 255)'
 
   loop: ->
+    start = new Date().getTime()
     @step()
     @render()
-    setTimeout (=> @loop()), 1000/24
+    time = new Date().getTime() - start
+    delay = @LOOP_TARGET - time
+    if delay < 0
+      console.log 'Frame took ' + time + 'ms'
+      delay = 0
+
+    setTimeout (=> @loop()), delay
 
   step: ->
     @tick += 1

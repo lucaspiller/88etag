@@ -54,6 +54,8 @@
   })();
   Gt.Controller = Controller;
   Universe = (function() {
+    var LOOP_TARGET;
+    LOOP_TARGET = 1000 / 24;
     function Universe(options) {
       this.canvas = options != null ? options.canvas : void 0;
       this.masses = new MassStorage;
@@ -73,11 +75,19 @@
       return this.ctx.strokeStyle = 'rgb(255, 255, 255)';
     };
     Universe.prototype.loop = function() {
+      var delay, start, time;
+      start = new Date().getTime();
       this.step();
       this.render();
+      time = new Date().getTime() - start;
+      delay = this.LOOP_TARGET - time;
+      if (delay < 0) {
+        console.log('Frame took ' + time + 'ms');
+        delay = 0;
+      }
       return setTimeout((__bind(function() {
         return this.loop();
-      }, this)), 1000 / 24);
+      }, this)), delay);
     };
     Universe.prototype.step = function() {
       this.tick += 1;
