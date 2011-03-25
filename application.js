@@ -309,20 +309,21 @@
   Gt.Mass = Mass;
   ShipTrail = (function() {
     __extends(ShipTrail, Mass);
-    ShipTrail.prototype.LIFETIME = 20;
+    ShipTrail.prototype.LIFETIME = 40;
     ShipTrail.prototype.type = 'ShipTrail';
     function ShipTrail(options) {
       var ship;
       ship = options.ship;
-      options.radius || (options.radius = 4);
+      options.radius || (options.radius = 2);
       options.position || (options.position = ship.position);
+      options.velocity || (options.velocity = new Vector((Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4));
       options.lifetime = this.LIFETIME;
       ShipTrail.__super__.constructor.call(this, options);
     }
     ShipTrail.prototype._render = function(ctx) {
       var alpha;
       alpha = this.lifetime / this.LIFETIME;
-      ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+      ctx.fillStyle = 'rgba(89,163,89,' + alpha + ')';
       ctx.beginPath();
       ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
       ctx.closePath();
@@ -337,7 +338,8 @@
     Ship.prototype.value = 1000;
     function Ship(options) {
       options || (options = {});
-      options.radius || (options.radius = 16);
+      options.radius || (options.radius = 10);
+      this.max_speed = 5;
       Ship.__super__.constructor.call(this, options);
     }
     Ship.prototype.step = function() {
@@ -349,13 +351,23 @@
       return Ship.__super__.step.call(this);
     };
     Ship.prototype._render = function(ctx) {
+      ctx.fillStyle = 'rgb(0,68,0)';
       ctx.beginPath();
-      ctx.moveTo(this.radius, 0);
-      ctx.lineTo(this.radius / -4, this.radius / 2.5);
-      ctx.moveTo(0, this.radius * 0.32);
-      ctx.lineTo(0, this.radius * -0.32);
-      ctx.moveTo(this.radius / -4, this.radius / -2.5);
-      ctx.lineTo(this.radius, 0);
+      ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgb(94,87,75)';
+      ctx.beginPath();
+      ctx.moveTo(-1.5 * this.radius, -1.2 * this.radius);
+      ctx.lineTo(this.radius * 1.4, -0.8 * this.radius);
+      ctx.moveTo(-1.5 * this.radius, this.radius * -0.4);
+      ctx.lineTo(this.radius * 1.5, this.radius * -0.4);
+      ctx.moveTo(-1.5 * this.radius, this.radius * 0.4);
+      ctx.lineTo(this.radius * 1.5, this.radius * 0.4);
+      ctx.moveTo(-1.5 * this.radius, 1.2 * this.radius);
+      ctx.lineTo(this.radius * 1.4, 0.8 * this.radius);
+      ctx.closePath();
       return ctx.stroke();
     };
     Ship.prototype.thrust = function() {
@@ -364,6 +376,25 @@
       }));
       this.acceleration = this.acceleration.plus(new Vector(this.rotation).times(0.15));
       return this.universe.update(this);
+    };
+    Ship.prototype.step = function() {
+      var dt, newVelocity, t;
+      dt = this.universe.tick - this.tick;
+      if ((this.lifetime -= dt) < 0) {
+        return this.remove();
+      }
+      for (t = 0; (0 <= dt ? t < dt : t > dt); (0 <= dt ? t += 1 : t -= 1)) {
+        newVelocity = this.velocity.plus(this.acceleration);
+        if (newVelocity.length() < this.max_speed) {
+          this.velocity = newVelocity;
+        } else {
+          this.velocity = newVelocity.times(this.max_speed / newVelocity.length());
+        }
+        this.position = this.position.plus(this.velocity);
+        this.acceleration = this.acceleration.times(0.8);
+        this.rotation += this.rotationalVelocity;
+      }
+      return this.tick = this.universe.tick;
     };
     Ship.prototype.rotate = function(dir) {
       if (dir > 0 && this.rotationalVelocity <= 0) {

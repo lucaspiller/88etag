@@ -256,20 +256,21 @@ class Mass
 Gt.Mass = Mass
 
 class ShipTrail extends Mass
-  LIFETIME: 20
+  LIFETIME: 40
 
   type: 'ShipTrail'
   constructor: (options) ->
     ship = options.ship
-    options.radius ||= 4
+    options.radius ||= 2
     options.position ||= ship.position
+    options.velocity ||= new Vector (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4
     options.lifetime = @LIFETIME
 
     super options
 
   _render: (ctx) ->
     alpha = @lifetime / @LIFETIME
-    ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')'
+    ctx.fillStyle = 'rgba(89,163,89,' + alpha + ')'
     ctx.beginPath()
     ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
     ctx.closePath()
@@ -282,7 +283,8 @@ class Ship extends Mass
 
   constructor: (options) ->
     options ||= {}
-    options.radius ||= 16
+    options.radius ||= 10
+    @max_speed = 5
     super options
 
   step: ->
@@ -292,19 +294,47 @@ class Ship extends Mass
     super()
 
   _render: (ctx) ->
+    ctx.fillStyle = 'rgb(0,68,0)'
     ctx.beginPath()
-    ctx.moveTo @radius, 0
-    ctx.lineTo(@radius / -4, @radius / 2.5)
-    ctx.moveTo(0, @radius * 0.32)
-    ctx.lineTo(0, @radius * -0.32)
-    ctx.moveTo(@radius / -4, @radius / -2.5)
-    ctx.lineTo @radius, 0
+    ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.lineWidth = 3
+    ctx.strokeStyle = 'rgb(94,87,75)'
+    ctx.beginPath()
+    ctx.moveTo -1.5 * @radius, -1.2 * @radius
+    ctx.lineTo @radius * 1.4, -0.8 * @radius
+    ctx.moveTo -1.5 * @radius, @radius * -0.4
+    ctx.lineTo @radius * 1.5, @radius * -0.4
+    ctx.moveTo -1.5 * @radius, @radius * 0.4
+    ctx.lineTo @radius * 1.5, @radius * 0.4
+    ctx.moveTo -1.5 * @radius, 1.2 * @radius
+    ctx.lineTo @radius * 1.4, 0.8 * @radius
+    ctx.closePath()
     ctx.stroke()
 
   thrust: ->
     @universe.add new ShipTrail { ship: this }
     @acceleration = @acceleration.plus(new Vector(@rotation).times(0.15))
     @universe.update this
+
+  step: ->
+    dt = @universe.tick - @tick
+    return @remove() if (@lifetime -= dt) < 0
+
+    for t in [0...dt]
+      newVelocity = @velocity.plus @acceleration
+      if newVelocity.length() < @max_speed
+        @velocity = newVelocity
+      else
+        @velocity = newVelocity.times (@max_speed / newVelocity.length())
+
+      @position = @position.plus @velocity
+      @acceleration = @acceleration.times 0.8 # drag
+      @rotation += @rotationalVelocity
+
+    @tick = @universe.tick
 
   rotate: (dir) ->
     if (dir > 0 && @rotationalVelocity <= 0)
