@@ -46,7 +46,7 @@ class Universe
     @loop()
 
   setupCanvas: ->
-    @bounds = new Bounds @canvas
+    @viewpoint = new Viewpoint @canvas
     @ctx = @canvas.getContext '2d'
     @ctx.fillStyle = 'rgb(255, 255, 255)'
     @ctx.strokeStyle = 'rgb(255, 255, 255)'
@@ -61,12 +61,12 @@ class Universe
     @masses.step()
 
   render: ->
-    @bounds.check @ship if @ship?
+    @viewpoint.update @ship if @ship?
 
     ctx = @ctx
     ctx.clearRect 0, 0, @canvas.width, @canvas.height
     ctx.save()
-    @bounds.translate ctx
+    @viewpoint.translate ctx
     @masses.render ctx
     ctx.restore()
 
@@ -244,40 +244,20 @@ class Ship extends Mass
     @universe.update this
 Gt.Ship = Ship
 
-class Bounds
+class Viewpoint
   BUFFER: 40
 
   constructor: (canvas) ->
-    [@l, @t] = [0, 0]
-    [@r, @b] = [@width, @height] = [canvas.width, canvas.height]
-    @dx = @dy = 0
+    @position = new Vector 0, 0
+    [@width, @height] = [canvas.width, canvas.height]
 
-  check: (ship) ->
-    p = ship.position
-    if p.x < @l+@BUFFER
-      @dx = -@width * 0.75
-    else if p.x > @r-@BUFFER
-      @dx = +@width * 0.75
-
-    if p.y < @t+@BUFFER
-      @dy = -@height * 0.75; flip = true
-    else if p.y > @b-@BUFFER
-      @dy = +@height * 0.75; flip = true
-
-    if @dx != 0
-      dx = parseInt @dx / 8
-      @l += dx; @r += dx
-      @dx -= dx
-      @dx = 0 if Math.abs(@dx) < 3
-
-    if @dy != 0
-      dy = parseInt @dy / 8
-      @t += dy; @b += dy
-      @dy -= dy
-      @dy = 0 if Math.abs(@dy) < 3
+  update: (ship) ->
+    # focus on centre of ship
+    @position.x = ship.position.x - (@width / 2)
+    @position.y = ship.position.y - (@height / 2)
 
   translate: (ctx) ->
-    ctx.translate(-@l, -@t)
+    ctx.translate(-@position.x, -@position.y)
 
 class Vector
   # can pass either x, y coords or radians for a unit vector

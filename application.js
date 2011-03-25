@@ -1,5 +1,5 @@
 (function() {
-  var Bounds, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Universe, Vector;
+  var Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Universe, Vector, Viewpoint;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -65,7 +65,7 @@
       return this.loop();
     };
     Universe.prototype.setupCanvas = function() {
-      this.bounds = new Bounds(this.canvas);
+      this.viewpoint = new Viewpoint(this.canvas);
       this.ctx = this.canvas.getContext('2d');
       this.ctx.fillStyle = 'rgb(255, 255, 255)';
       return this.ctx.strokeStyle = 'rgb(255, 255, 255)';
@@ -84,12 +84,12 @@
     Universe.prototype.render = function() {
       var ctx;
       if (this.ship != null) {
-        this.bounds.check(this.ship);
+        this.viewpoint.update(this.ship);
       }
       ctx = this.ctx;
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       ctx.save();
-      this.bounds.translate(ctx);
+      this.viewpoint.translate(ctx);
       this.masses.render(ctx);
       return ctx.restore();
     };
@@ -307,52 +307,21 @@
     return Ship;
   })();
   Gt.Ship = Ship;
-  Bounds = (function() {
-    Bounds.prototype.BUFFER = 40;
-    function Bounds(canvas) {
-      var _ref, _ref2, _ref3;
-      _ref = [0, 0], this.l = _ref[0], this.t = _ref[1];
-      _ref3 = (_ref2 = [canvas.width, canvas.height], this.width = _ref2[0], this.height = _ref2[1], _ref2), this.r = _ref3[0], this.b = _ref3[1];
-      this.dx = this.dy = 0;
+  Viewpoint = (function() {
+    Viewpoint.prototype.BUFFER = 40;
+    function Viewpoint(canvas) {
+      var _ref;
+      this.position = new Vector(0, 0);
+      _ref = [canvas.width, canvas.height], this.width = _ref[0], this.height = _ref[1];
     }
-    Bounds.prototype.check = function(ship) {
-      var dx, dy, flip, p;
-      p = ship.position;
-      if (p.x < this.l + this.BUFFER) {
-        this.dx = -this.width * 0.75;
-      } else if (p.x > this.r - this.BUFFER) {
-        this.dx = +this.width * 0.75;
-      }
-      if (p.y < this.t + this.BUFFER) {
-        this.dy = -this.height * 0.75;
-        flip = true;
-      } else if (p.y > this.b - this.BUFFER) {
-        this.dy = +this.height * 0.75;
-        flip = true;
-      }
-      if (this.dx !== 0) {
-        dx = parseInt(this.dx / 8);
-        this.l += dx;
-        this.r += dx;
-        this.dx -= dx;
-        if (Math.abs(this.dx) < 3) {
-          this.dx = 0;
-        }
-      }
-      if (this.dy !== 0) {
-        dy = parseInt(this.dy / 8);
-        this.t += dy;
-        this.b += dy;
-        this.dy -= dy;
-        if (Math.abs(this.dy) < 3) {
-          return this.dy = 0;
-        }
-      }
+    Viewpoint.prototype.update = function(ship) {
+      this.position.x = ship.position.x - (this.width / 2);
+      return this.position.y = ship.position.y - (this.height / 2);
     };
-    Bounds.prototype.translate = function(ctx) {
-      return ctx.translate(-this.l, -this.t);
+    Viewpoint.prototype.translate = function(ctx) {
+      return ctx.translate(-this.position.x, -this.position.y);
     };
-    return Bounds;
+    return Viewpoint;
   })();
   Vector = (function() {
     function Vector(x, y) {
