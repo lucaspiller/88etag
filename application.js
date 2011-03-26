@@ -342,14 +342,6 @@
       this.max_speed = 5;
       Ship.__super__.constructor.call(this, options);
     }
-    Ship.prototype.step = function() {
-      var dt;
-      if (this === this.universe.ship) {
-        dt = this.universe.tick - this.tick;
-        this.lifetime += dt;
-      }
-      return Ship.__super__.step.call(this);
-    };
     Ship.prototype._render = function(ctx) {
       ctx.fillStyle = 'rgb(0,68,0)';
       ctx.beginPath();
@@ -380,6 +372,9 @@
     Ship.prototype.step = function() {
       var dt, newVelocity, t;
       dt = this.universe.tick - this.tick;
+      if (this === this.universe.ship) {
+        this.lifetime += dt;
+      }
       if ((this.lifetime -= dt) < 0) {
         return this.remove();
       }

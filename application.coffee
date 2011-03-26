@@ -287,12 +287,6 @@ class Ship extends Mass
     @max_speed = 5
     super options
 
-  step: ->
-    if this is @universe.ship
-      dt = @universe.tick - @tick
-      @lifetime += dt
-    super()
-
   _render: (ctx) ->
     ctx.fillStyle = 'rgb(0,68,0)'
     ctx.beginPath()
@@ -321,6 +315,8 @@ class Ship extends Mass
 
   step: ->
     dt = @universe.tick - @tick
+    if this is @universe.ship
+      @lifetime += dt
     return @remove() if (@lifetime -= dt) < 0
 
     for t in [0...dt]
