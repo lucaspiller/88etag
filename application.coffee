@@ -199,7 +199,15 @@ class MassStorage
     @items[@key mass] = mass
 
   render: (ctx) ->
-    mass.render ctx for id, mass of @items
+    highestLayer = 0
+    for id, mass of @items
+      if mass.layer > highestLayer
+        highestLayer = mass.layer
+
+    for i in [0..highestLayer]
+      for id, mass of @items
+        if mass.layer == i
+          mass.render ctx
 
   step: ->
     mass.step() for id, mass of @items
@@ -215,6 +223,7 @@ class Mass
     @rotation = o.rotation or 0
     @rotationalVelocity = o.rotationalVelocity or 0
     @lifetime = o.lifetime or 24 * 60
+    @layer = o.layer or 0
 
   remove: ->
     @universe.remove this
@@ -284,6 +293,7 @@ class Ship extends Mass
   constructor: (options) ->
     options ||= {}
     options.radius ||= 10
+    options.layer = 1
     @max_speed = 5
     super options
 

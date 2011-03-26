@@ -230,12 +230,27 @@
       return this.items[this.key(mass)] = mass;
     };
     MassStorage.prototype.render = function(ctx) {
-      var id, mass, _ref, _results;
+      var highestLayer, i, id, mass, _ref, _results;
+      highestLayer = 0;
       _ref = this.items;
-      _results = [];
       for (id in _ref) {
         mass = _ref[id];
-        _results.push(mass.render(ctx));
+        if (mass.layer > highestLayer) {
+          highestLayer = mass.layer;
+        }
+      }
+      _results = [];
+      for (i = 0; (0 <= highestLayer ? i <= highestLayer : i >= highestLayer); (0 <= highestLayer ? i += 1 : i -= 1)) {
+        _results.push((function() {
+          var _ref, _results;
+          _ref = this.items;
+          _results = [];
+          for (id in _ref) {
+            mass = _ref[id];
+            _results.push(mass.layer === i ? mass.render(ctx) : void 0);
+          }
+          return _results;
+        }).call(this));
       }
       return _results;
     };
@@ -263,6 +278,7 @@
       this.rotation = o.rotation || 0;
       this.rotationalVelocity = o.rotationalVelocity || 0;
       this.lifetime = o.lifetime || 24 * 60;
+      this.layer = o.layer || 0;
     }
     Mass.prototype.remove = function() {
       return this.universe.remove(this);
@@ -339,6 +355,7 @@
     function Ship(options) {
       options || (options = {});
       options.radius || (options.radius = 10);
+      options.layer = 1;
       this.max_speed = 5;
       Ship.__super__.constructor.call(this, options);
     }
