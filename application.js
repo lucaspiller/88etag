@@ -1,5 +1,5 @@
 (function() {
-  var Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint;
+  var CommandCentre, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -49,7 +49,7 @@
       this.starfield = new Starfield;
       this.keys = [];
       this.tick = 0;
-      this.buildShip();
+      this.buildPlayer();
     }
     Universe.prototype.start = function() {
       this.setupCanvas();
@@ -125,13 +125,23 @@
       this.masses.render(ctx);
       return ctx.restore();
     };
-    Universe.prototype.buildShip = function() {
+    Universe.prototype.buildPlayer = function() {
       var h, w, x, y, _ref, _ref2, _ref3, _ref4;
       _ref3 = [(_ref = this.canvas) != null ? _ref.width : void 0, (_ref2 = this.canvas) != null ? _ref2.height : void 0], w = _ref3[0], h = _ref3[1];
       _ref4 = [Math.random() * w / 2 + w / 4, Math.random() * h / 2 + h / 4], x = _ref4[0], y = _ref4[1];
+      this.commandCentre = new CommandCentre({
+        position: new Vector(x, y)
+      });
+      this.add(this.commandCentre);
+      return this.buildShip();
+    };
+    Universe.prototype.buildShip = function() {
+      var x, y;
+      x = this.commandCentre.position.x;
+      y = this.commandCentre.position.y + this.commandCentre.radius;
       this.ship = new Ship({
         position: new Vector(x, y),
-        rotation: -Math.PI / 2
+        rotation: Math.PI / 2
       });
       return this.add(this.ship);
     };
@@ -374,7 +384,7 @@
     function Ship(options) {
       options || (options = {});
       options.radius || (options.radius = 10);
-      options.layer = 1;
+      options.layer = 2;
       this.max_speed = 5;
       this.trailDelay = 0;
       Ship.__super__.constructor.call(this, options);
@@ -445,6 +455,55 @@
     return Ship;
   })();
   Gt.Ship = Ship;
+  CommandCentre = (function() {
+    __extends(CommandCentre, Mass);
+    CommandCentre.prototype.type = 'CommandCentre';
+    function CommandCentre(options) {
+      options || (options = {});
+      options.radius || (options.radius = 80);
+      options.rotationalVelocity || (options.rotationalVelocity = Math.PI / 512);
+      options.layer = 1;
+      CommandCentre.__super__.constructor.call(this, options);
+    }
+    CommandCentre.prototype.step = function() {
+      var dt;
+      dt = this.universe.tick - this.tick;
+      this.lifetime += dt;
+      return CommandCentre.__super__.step.apply(this, arguments);
+    };
+    CommandCentre.prototype._render = function(ctx) {
+      var i;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgb(96, 97, 90)';
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.strokeStyle = 'rgb(254, 235, 202)';
+      for (i = 1; i <= 4; i++) {
+        ctx.strokeRect(this.radius / 2, -5, this.radius / 2, 10);
+        ctx.strokeRect(this.radius, -20, 2, 40);
+        ctx.rotate(Math.PI / 2);
+      }
+      ctx.rotate(-2 * this.rotation);
+      ctx.rotate(Math.PI / 8);
+      for (i = 1; i <= 8; i++) {
+        ctx.strokeRect((this.radius / 2) * 1.5, -15, 2, 30);
+        ctx.rotate(Math.PI / 4);
+      }
+      ctx.fillStyle = 'rgb(0, 25, 0)';
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius / 2, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgb(0,68,0)';
+      ctx.beginPath();
+      ctx.arc(0, 0, (this.radius / 2) * 0.9, 0, Math.PI * 2, true);
+      ctx.closePath();
+      return ctx.fill();
+    };
+    return CommandCentre;
+  })();
   Viewpoint = (function() {
     Viewpoint.prototype.BUFFER = 40;
     function Viewpoint(canvas) {

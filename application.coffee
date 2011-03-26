@@ -34,7 +34,7 @@ class Universe
     @starfield = new Starfield
     @keys = []
     @tick = 0
-    @buildShip()
+    @buildPlayer()
 
   start: ->
     @setupCanvas()
@@ -96,13 +96,23 @@ class Universe
     @masses.render ctx
     ctx.restore()
 
-  buildShip: ->
+  buildPlayer: ->
     [w, h] = [@canvas?.width, @canvas?.height]
     [x, y] = [Math.random() * w/2 + w/4, Math.random() * h/2 + h/4]
 
+    @commandCentre = new CommandCentre {
+      position: new Vector x, y
+    }
+    @add @commandCentre
+    @buildShip()
+
+  buildShip: ->
+    x = @commandCentre.position.x
+    y = @commandCentre.position.y + @commandCentre.radius
+
     @ship = new Ship {
       position: new Vector x, y
-      rotation: -Math.PI / 2
+      rotation: Math.PI / 2
     }
     @add @ship
 
@@ -307,7 +317,7 @@ class Ship extends Mass
   constructor: (options) ->
     options ||= {}
     options.radius ||= 10
-    options.layer = 1
+    options.layer = 2
     @max_speed = 5
     @trailDelay = 0
     super options
@@ -369,6 +379,57 @@ class Ship extends Mass
       @rotationalVelocity = 0
     @universe.update this
 Gt.Ship = Ship
+
+class CommandCentre extends Mass
+  type: 'CommandCentre'
+
+  constructor: (options) ->
+    options ||= {}
+    options.radius ||= 80
+    options.rotationalVelocity ||= Math.PI / 512
+    options.layer = 1
+    super options
+
+  step: ->
+    dt = @universe.tick - @tick
+    @lifetime += dt
+    super
+
+  _render: (ctx) ->
+    # outer ring
+    ctx.lineWidth = 3
+    ctx.strokeStyle = 'rgb(96, 97, 90)'
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.stroke()
+
+    # main sections
+    ctx.strokeStyle = 'rgb(254, 235, 202)'
+    for i in [1..4]
+      ctx.strokeRect @radius / 2, -5, @radius / 2, 10
+      ctx.strokeRect @radius, -20, 2, 40
+      ctx.rotate Math.PI / 2
+
+    # inner sections
+    ctx.rotate -2*@rotation
+    ctx.rotate Math.PI / 8
+    for i in [1..8]
+      ctx.strokeRect (@radius / 2) * 1.5, -15, 2, 30
+      ctx.rotate Math.PI / 4
+
+    # health bar
+    ctx.fillStyle = 'rgb(0, 25, 0)'
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius / 2, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = 'rgb(0,68,0)'
+    ctx.beginPath()
+    ctx.arc 0, 0, (@radius / 2) * 0.9, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
 
 class Viewpoint
   BUFFER: 40
