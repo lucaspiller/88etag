@@ -15,19 +15,10 @@ class Controller
 
   setupKeys: ->
     $(window).keydown (e) =>
-      ship = @universe.ship
-      switch e.which
-        when 37       # left
-          ship.rotate(-1)
-        when 39       # right
-          ship.rotate(+1)
-        when 38       # up
-          ship.thrust()
+      @universe.keyDown e.which
 
     $(window).keyup (e) =>
-      switch e.which
-        when 37, 39
-          @universe.ship.rotate(0)
+      @universe.keyUp e.which
 
   start: ->
     @universe = new Universe { canvas: @canvas }
@@ -41,6 +32,7 @@ class Universe
     @canvas = options?.canvas
     @masses = new MassStorage
     @starfield = new Starfield
+    @keys = []
     @tick = 0
     @buildShip()
 
@@ -57,6 +49,7 @@ class Universe
 
   loop: ->
     start = new Date().getTime()
+    @checkInput()
     @step()
     @render()
     time = new Date().getTime() - start
@@ -66,6 +59,27 @@ class Universe
       delay = 0
 
     setTimeout (=> @loop()), delay
+
+  keyDown: (key) ->
+    @keys.push key
+
+  keyUp: (key) ->
+    @keys = _.without @keys, key
+
+    # stop ship rotation
+    switch key
+      when 37, 39
+        @ship.rotate(0)
+
+  checkInput: ->
+    for key in @keys
+      switch key
+        when 37       # left
+          @ship.rotate(-1)
+        when 39       # right
+          @ship.rotate(+1)
+        when 38       # up
+          @ship.thrust()
 
   step: ->
     @tick += 1

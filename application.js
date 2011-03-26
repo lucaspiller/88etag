@@ -25,23 +25,10 @@
     };
     Controller.prototype.setupKeys = function() {
       $(window).keydown(__bind(function(e) {
-        var ship;
-        ship = this.universe.ship;
-        switch (e.which) {
-          case 37:
-            return ship.rotate(-1);
-          case 39:
-            return ship.rotate(+1);
-          case 38:
-            return ship.thrust();
-        }
+        return this.universe.keyDown(e.which);
       }, this));
       return $(window).keyup(__bind(function(e) {
-        switch (e.which) {
-          case 37:
-          case 39:
-            return this.universe.ship.rotate(0);
-        }
+        return this.universe.keyUp(e.which);
       }, this));
     };
     Controller.prototype.start = function() {
@@ -60,6 +47,7 @@
       this.canvas = options != null ? options.canvas : void 0;
       this.masses = new MassStorage;
       this.starfield = new Starfield;
+      this.keys = [];
       this.tick = 0;
       this.buildShip();
     }
@@ -77,6 +65,7 @@
     Universe.prototype.loop = function() {
       var delay, start, time;
       start = new Date().getTime();
+      this.checkInput();
       this.step();
       this.render();
       time = new Date().getTime() - start;
@@ -88,6 +77,36 @@
       return setTimeout((__bind(function() {
         return this.loop();
       }, this)), delay);
+    };
+    Universe.prototype.keyDown = function(key) {
+      return this.keys.push(key);
+    };
+    Universe.prototype.keyUp = function(key) {
+      this.keys = _.without(this.keys, key);
+      switch (key) {
+        case 37:
+        case 39:
+          return this.ship.rotate(0);
+      }
+    };
+    Universe.prototype.checkInput = function() {
+      var key, _i, _len, _ref, _results;
+      _ref = this.keys;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        key = _ref[_i];
+        _results.push((function() {
+          switch (key) {
+            case 37:
+              return this.ship.rotate(-1);
+            case 39:
+              return this.ship.rotate(+1);
+            case 38:
+              return this.ship.thrust();
+          }
+        }).call(this));
+      }
+      return _results;
     };
     Universe.prototype.step = function() {
       this.tick += 1;
