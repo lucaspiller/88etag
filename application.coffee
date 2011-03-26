@@ -309,6 +309,7 @@ class Ship extends Mass
     options.radius ||= 10
     options.layer = 1
     @max_speed = 5
+    @trailDelay = 0
     super options
 
   _render: (ctx) ->
@@ -333,7 +334,9 @@ class Ship extends Mass
     ctx.stroke()
 
   thrust: ->
-    @universe.add new ShipTrail { ship: this }
+    if @trailDelay <= 0
+      @universe.add new ShipTrail { ship: this }
+      @trailDelay = 1
     @acceleration = @acceleration.plus(new Vector(@rotation).times(0.15))
     @universe.update this
 
@@ -354,13 +357,14 @@ class Ship extends Mass
       @acceleration = @acceleration.times 0.8 # drag
       @rotation += @rotationalVelocity
 
+    @trailDelay -= dt
     @tick = @universe.tick
 
   rotate: (dir) ->
     if (dir > 0 && @rotationalVelocity <= 0)
-      @rotationalVelocity += Math.PI / 16
+      @rotationalVelocity += Math.PI / 64
     else if (dir < 0 && @rotationalVelocity >= 0)
-      @rotationalVelocity -= Math.PI / 16
+      @rotationalVelocity -= Math.PI / 64
     else if dir == 0
       @rotationalVelocity = 0
     @universe.update this

@@ -376,6 +376,7 @@
       options.radius || (options.radius = 10);
       options.layer = 1;
       this.max_speed = 5;
+      this.trailDelay = 0;
       Ship.__super__.constructor.call(this, options);
     }
     Ship.prototype._render = function(ctx) {
@@ -399,9 +400,12 @@
       return ctx.stroke();
     };
     Ship.prototype.thrust = function() {
-      this.universe.add(new ShipTrail({
-        ship: this
-      }));
+      if (this.trailDelay <= 0) {
+        this.universe.add(new ShipTrail({
+          ship: this
+        }));
+        this.trailDelay = 1;
+      }
       this.acceleration = this.acceleration.plus(new Vector(this.rotation).times(0.15));
       return this.universe.update(this);
     };
@@ -425,13 +429,14 @@
         this.acceleration = this.acceleration.times(0.8);
         this.rotation += this.rotationalVelocity;
       }
+      this.trailDelay -= dt;
       return this.tick = this.universe.tick;
     };
     Ship.prototype.rotate = function(dir) {
       if (dir > 0 && this.rotationalVelocity <= 0) {
-        this.rotationalVelocity += Math.PI / 16;
+        this.rotationalVelocity += Math.PI / 64;
       } else if (dir < 0 && this.rotationalVelocity >= 0) {
-        this.rotationalVelocity -= Math.PI / 16;
+        this.rotationalVelocity -= Math.PI / 64;
       } else if (dir === 0) {
         this.rotationalVelocity = 0;
       }
