@@ -442,7 +442,7 @@ Gt.Ship = Ship
 
 class CommandCentre extends Mass
   type: 'CommandCentre'
-  mass: Infinity
+  mass: 999999999999999999
 
   constructor: (options) ->
     options ||= {}

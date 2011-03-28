@@ -527,7 +527,7 @@
   CommandCentre = (function() {
     __extends(CommandCentre, Mass);
     CommandCentre.prototype.type = 'CommandCentre';
-    CommandCentre.prototype.mass = Infinity;
+    CommandCentre.prototype.mass = 999999999999999999;
     function CommandCentre(options) {
       options || (options = {});
       options.radius || (options.radius = 80);
