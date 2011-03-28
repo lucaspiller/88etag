@@ -80,7 +80,9 @@ class Universe
         when 39       # right
           @ship.rotate(+1)
         when 38       # up
-          @ship.thrust()
+          @ship.forward()
+        when 40
+          @ship.backward()
 
   step: ->
     @tick += 1
@@ -367,7 +369,8 @@ class Ship extends Mass
     options ||= {}
     options.radius ||= 10
     options.layer = 2
-    @max_speed = 5
+    @max_speed = 3
+    @max_accel = 0.03
     @trailDelay = 0
     super options
 
@@ -392,11 +395,17 @@ class Ship extends Mass
     ctx.closePath()
     ctx.stroke()
 
-  thrust: ->
+  forward: ->
+    @thrust @acceleration.plus(new Vector(@rotation).times(@max_accel))
+
+  backward: ->
+    @thrust @acceleration.minus(new Vector(@rotation).times(@max_accel))
+
+  thrust: (accel) ->
     if @trailDelay <= 0
       @universe.add new ShipTrail { ship: this }
       @trailDelay = 1
-    @acceleration = @acceleration.plus(new Vector(@rotation).times(0.15))
+    @acceleration = accel
     @universe.update this
 
   step: ->
