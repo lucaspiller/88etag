@@ -103,6 +103,16 @@ class Universe
     @masses.render ctx
     ctx.restore()
 
+    @renderGUI ctx
+
+  renderGUI: (ctx) ->
+    powerWidth = (@ship.energy / @ship.maxEnergy) * 200
+    ctx.save()
+    ctx.fillStyle = 'rgb(255, 0, 0)'
+    ctx.fillRect 30, @canvas.height - 40, powerWidth, 5
+    ctx.restore()
+
+
   buildPlayer: ->
     [w, h] = [@canvas?.width, @canvas?.height]
     [x, y] = [Math.random() * w/2 + w/4, Math.random() * h/2 + h/4]

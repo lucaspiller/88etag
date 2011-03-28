@@ -130,6 +130,15 @@
       this.starfield.render(ctx, this.viewpoint);
       this.viewpoint.translate(ctx);
       this.masses.render(ctx);
+      ctx.restore();
+      return this.renderGUI(ctx);
+    };
+    Universe.prototype.renderGUI = function(ctx) {
+      var powerWidth;
+      powerWidth = (this.ship.energy / this.ship.maxEnergy) * 200;
+      ctx.save();
+      ctx.fillStyle = 'rgb(255, 0, 0)';
+      ctx.fillRect(30, this.canvas.height - 40, powerWidth, 5);
       return ctx.restore();
     };
     Universe.prototype.buildPlayer = function() {
