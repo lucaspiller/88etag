@@ -260,6 +260,7 @@ class MassStorage
 class Mass
   type: 'Unknown'
   mass: 1
+  solid: true
 
   constructor: (options) ->
     o = options or {}
@@ -272,17 +273,21 @@ class Mass
     @rotationalVelocity = o.rotationalVelocity or 0
     @lifetime = o.lifetime or 24 * 60
     @layer = o.layer or 0
+    @health = o.health or 1
+
+  explode: ->
+    @remove()
 
   remove: ->
     @universe.remove this
 
-  solid: true
   overlaps: (other) ->
-    return false unless @solid and other.solid and other != this
+    return false unless other != this
     diff = other.position.minus(@position).length()
     diff < (other.radius + @radius)
 
   handleCollision: (other) ->
+    return unless @solid and other.solid
     x = @position.minus(other.position).normalized()
     v1 = @velocity
     x1 = x.dotProduct(v1)
@@ -373,7 +378,7 @@ Gt.ShipTrail = ShipTrail
 class WeaponsFire extends Mass
   type: 'WeaponsFire'
   solid: false
-  weaponsfire: true
+  damage: 1
 
   constructor: (options) ->
     @parent = options.parent
@@ -383,8 +388,17 @@ class WeaponsFire extends Mass
     options.velocity ||= new Vector(@parent.rotation).times(2)
     super options
 
+  handleCollision: (other) ->
+    return unless other.solid
+    return if other == @parent
+    other.health -= @damage
+    if other.health <= 0
+      other.explode()
+    @remove()
+
 class Bullet extends WeaponsFire
   type: 'Bullet'
+  damage: 100
 
   constructor: (options) ->
     options.radius ||= 5

@@ -331,6 +331,7 @@
   Mass = (function() {
     Mass.prototype.type = 'Unknown';
     Mass.prototype.mass = 1;
+    Mass.prototype.solid = true;
     function Mass(options) {
       var o;
       o = options || {};
@@ -343,14 +344,17 @@
       this.rotationalVelocity = o.rotationalVelocity || 0;
       this.lifetime = o.lifetime || 24 * 60;
       this.layer = o.layer || 0;
+      this.health = o.health || 1;
     }
+    Mass.prototype.explode = function() {
+      return this.remove();
+    };
     Mass.prototype.remove = function() {
       return this.universe.remove(this);
     };
-    Mass.prototype.solid = true;
     Mass.prototype.overlaps = function(other) {
       var diff;
-      if (!(this.solid && other.solid && other !== this)) {
+      if (other === this) {
         return false;
       }
       diff = other.position.minus(this.position).length();
@@ -358,6 +362,9 @@
     };
     Mass.prototype.handleCollision = function(other) {
       var m1, m2, v1, v1x, v1y, v2, v2x, v2y, x, x1, x2, _results;
+      if (!(this.solid && other.solid)) {
+        return;
+      }
       x = this.position.minus(other.position).normalized();
       v1 = this.velocity;
       x1 = x.dotProduct(v1);
@@ -449,7 +456,7 @@
     __extends(WeaponsFire, Mass);
     WeaponsFire.prototype.type = 'WeaponsFire';
     WeaponsFire.prototype.solid = false;
-    WeaponsFire.prototype.weaponsfire = true;
+    WeaponsFire.prototype.damage = 1;
     function WeaponsFire(options) {
       this.parent = options.parent;
       options || (options = {});
@@ -458,11 +465,25 @@
       options.velocity || (options.velocity = new Vector(this.parent.rotation).times(2));
       WeaponsFire.__super__.constructor.call(this, options);
     }
+    WeaponsFire.prototype.handleCollision = function(other) {
+      if (!other.solid) {
+        return;
+      }
+      if (other === this.parent) {
+        return;
+      }
+      other.health -= this.damage;
+      if (other.health <= 0) {
+        other.explode();
+      }
+      return this.remove();
+    };
     return WeaponsFire;
   })();
   Bullet = (function() {
     __extends(Bullet, WeaponsFire);
     Bullet.prototype.type = 'Bullet';
+    Bullet.prototype.damage = 100;
     function Bullet(options) {
       options.radius || (options.radius = 5);
       options.lifetime = 100;
