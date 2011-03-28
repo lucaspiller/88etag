@@ -85,8 +85,6 @@ class Universe
           @ship.backward()
         when 68 # d
           @ship.fire()
-        else
-          console.log "Unhandled key event: " + key
 
   step: ->
     @tick += 1
@@ -372,18 +370,27 @@ class ShipTrail extends Mass
     ctx.fill()
 Gt.ShipTrail = ShipTrail
 
-class Bullet extends Mass
-  type: 'Bullet'
+class WeaponsFire extends Mass
+  type: 'WeaponsFire'
   solid: false
+  weaponsfire: true
 
   constructor: (options) ->
-    @ship = options.ship
+    @parent = options.parent
     options ||= {}
+    options.radius ||= 1
+    options.position ||= @parent.position
+    options.velocity ||= new Vector(@parent.rotation).times(2)
+    super options
+
+class Bullet extends WeaponsFire
+  type: 'Bullet'
+
+  constructor: (options) ->
     options.radius ||= 5
-    options.position ||= @ship.position
-    options.velocity ||= new Vector(@ship.rotation).times(6)
     options.lifetime = 100
     super options
+    @velocity = new Vector(@parent.rotation).times(6)
 
   _render: (ctx) ->
     ctx.fillStyle = 'rgb(89,163,89)'
@@ -448,7 +455,7 @@ class Ship extends Mass
   fire: ->
     if @bulletDelay <= 0
       return unless @power(-50)
-      @universe.add new Bullet { ship: this }
+      @universe.add new Bullet { parent: this }
       @bulletDelay = 10
 
   power: (delta) ->

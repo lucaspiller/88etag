@@ -1,5 +1,5 @@
 (function() {
-  var Bullet, CommandCentre, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint;
+  var Bullet, CommandCentre, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -108,8 +108,6 @@
               return this.ship.backward();
             case 68:
               return this.ship.fire();
-            default:
-              return console.log("Unhandled key event: " + key);
           }
         }).call(this));
       }
@@ -447,18 +445,29 @@
     return ShipTrail;
   })();
   Gt.ShipTrail = ShipTrail;
-  Bullet = (function() {
-    __extends(Bullet, Mass);
-    Bullet.prototype.type = 'Bullet';
-    Bullet.prototype.solid = false;
-    function Bullet(options) {
-      this.ship = options.ship;
+  WeaponsFire = (function() {
+    __extends(WeaponsFire, Mass);
+    WeaponsFire.prototype.type = 'WeaponsFire';
+    WeaponsFire.prototype.solid = false;
+    WeaponsFire.prototype.weaponsfire = true;
+    function WeaponsFire(options) {
+      this.parent = options.parent;
       options || (options = {});
+      options.radius || (options.radius = 1);
+      options.position || (options.position = this.parent.position);
+      options.velocity || (options.velocity = new Vector(this.parent.rotation).times(2));
+      WeaponsFire.__super__.constructor.call(this, options);
+    }
+    return WeaponsFire;
+  })();
+  Bullet = (function() {
+    __extends(Bullet, WeaponsFire);
+    Bullet.prototype.type = 'Bullet';
+    function Bullet(options) {
       options.radius || (options.radius = 5);
-      options.position || (options.position = this.ship.position);
-      options.velocity || (options.velocity = new Vector(this.ship.rotation).times(6));
       options.lifetime = 100;
       Bullet.__super__.constructor.call(this, options);
+      this.velocity = new Vector(this.parent.rotation).times(6);
     }
     Bullet.prototype._render = function(ctx) {
       ctx.fillStyle = 'rgb(89,163,89)';
@@ -529,7 +538,7 @@
           return;
         }
         this.universe.add(new Bullet({
-          ship: this
+          parent: this
         }));
         return this.bulletDelay = 10;
       }
