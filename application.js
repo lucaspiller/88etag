@@ -106,6 +106,8 @@
               return this.ship.forward();
             case 40:
               return this.ship.backward();
+            default:
+              return console.log("Unhandled key event: " + key);
           }
         }).call(this));
       }

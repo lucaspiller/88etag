@@ -83,6 +83,8 @@ class Universe
           @ship.forward()
         when 40
           @ship.backward()
+        else
+          console.log "Unhandled key event: " + key
 
   step: ->
     @tick += 1
