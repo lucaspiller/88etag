@@ -1,5 +1,5 @@
 (function() {
-  var CommandCentre, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint;
+  var Bullet, CommandCentre, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -106,6 +106,8 @@
               return this.ship.forward();
             case 40:
               return this.ship.backward();
+            case 68:
+              return this.ship.fire();
             default:
               return console.log("Unhandled key event: " + key);
           }
@@ -414,21 +416,19 @@
   Gt.Mass = Mass;
   ShipTrail = (function() {
     __extends(ShipTrail, Mass);
-    ShipTrail.prototype.LIFETIME = 40;
     ShipTrail.prototype.type = 'ShipTrail';
     ShipTrail.prototype.solid = false;
     function ShipTrail(options) {
-      var ship;
-      ship = options.ship;
+      this.ship = options.ship;
       options.radius || (options.radius = 2);
-      options.position || (options.position = ship.position);
+      options.position || (options.position = this.ship.position);
       options.velocity || (options.velocity = new Vector((Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4));
-      options.lifetime = this.LIFETIME;
+      options.lifetime = 40;
       ShipTrail.__super__.constructor.call(this, options);
     }
     ShipTrail.prototype._render = function(ctx) {
       var alpha;
-      alpha = this.lifetime / this.LIFETIME;
+      alpha = this.lifetime / 40;
       ctx.fillStyle = 'rgba(89,163,89,' + alpha + ')';
       ctx.beginPath();
       ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
@@ -438,18 +438,44 @@
     return ShipTrail;
   })();
   Gt.ShipTrail = ShipTrail;
+  Bullet = (function() {
+    __extends(Bullet, Mass);
+    Bullet.prototype.type = 'Bullet';
+    Bullet.prototype.solid = false;
+    function Bullet(options) {
+      this.ship = options.ship;
+      options || (options = {});
+      options.radius || (options.radius = 5);
+      options.position || (options.position = this.ship.position);
+      options.velocity || (options.velocity = new Vector(this.ship.rotation).times(6));
+      options.lifetime = 100;
+      Bullet.__super__.constructor.call(this, options);
+    }
+    Bullet.prototype._render = function(ctx) {
+      ctx.fillStyle = 'rgb(89,163,89)';
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+      ctx.closePath();
+      return ctx.fill();
+    };
+    return Bullet;
+  })();
+  Gt.Bullet = Bullet;
   Ship = (function() {
     __extends(Ship, Mass);
     Ship.prototype.type = 'Ship';
     Ship.prototype.value = 1000;
     Ship.prototype.mass = 10;
+    Ship.prototype.maxEnergy = 200;
     function Ship(options) {
       options || (options = {});
       options.radius || (options.radius = 10);
       options.layer = 2;
+      this.energy = options.energy || this.maxEnergy;
       this.max_speed = 3;
       this.max_accel = 0.03;
       this.trailDelay = 0;
+      this.bulletDelay = 0;
       Ship.__super__.constructor.call(this, options);
     }
     Ship.prototype._render = function(ctx) {
@@ -488,11 +514,35 @@
       this.acceleration = accel;
       return this.universe.update(this);
     };
+    Ship.prototype.fire = function() {
+      if (this.bulletDelay <= 0) {
+        if (!this.power(-50)) {
+          return;
+        }
+        this.universe.add(new Bullet({
+          ship: this
+        }));
+        return this.bulletDelay = 10;
+      }
+    };
+    Ship.prototype.power = function(delta) {
+      if (this.energy + delta < 0) {
+        return false;
+      }
+      this.energy += delta;
+      if (this.energy > this.maxEnergy) {
+        this.energy = this.maxEnergy;
+      }
+      return true;
+    };
     Ship.prototype.step = function() {
       var dt, newVelocity, t;
       dt = this.universe.tick - this.tick;
       if (this === this.universe.ship) {
         this.lifetime += dt;
+        this.power(dt);
+        this.trailDelay -= dt;
+        this.bulletDelay -= dt;
       }
       if ((this.lifetime -= dt) < 0) {
         return this.remove();
@@ -508,7 +558,6 @@
         this.acceleration = this.acceleration.times(0.8);
         this.rotation += this.rotationalVelocity;
       }
-      this.trailDelay -= dt;
       return this.tick = this.universe.tick;
     };
     Ship.prototype.rotate = function(dir) {

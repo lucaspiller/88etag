@@ -75,14 +75,16 @@ class Universe
   checkInput: ->
     for key in @keys
       switch key
-        when 37       # left
+        when 37 # left
           @ship.rotate(-1)
-        when 39       # right
+        when 39 # right
           @ship.rotate(+1)
-        when 38       # up
+        when 38 # up
           @ship.forward()
-        when 40
+        when 40 # down
           @ship.backward()
+        when 68 # d
+          @ship.fire()
         else
           console.log "Unhandled key event: " + key
 
@@ -340,21 +342,19 @@ class Mass
 Gt.Mass = Mass
 
 class ShipTrail extends Mass
-  LIFETIME: 40
-
   type: 'ShipTrail'
   solid: false
-  constructor: (options) ->
-    ship = options.ship
-    options.radius ||= 2
-    options.position ||= ship.position
-    options.velocity ||= new Vector (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4
-    options.lifetime = @LIFETIME
 
+  constructor: (options) ->
+    @ship = options.ship
+    options.radius ||= 2
+    options.position ||= @ship.position
+    options.velocity ||= new Vector (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4
+    options.lifetime = 40
     super options
 
   _render: (ctx) ->
-    alpha = @lifetime / @LIFETIME
+    alpha = @lifetime / 40
     ctx.fillStyle = 'rgba(89,163,89,' + alpha + ')'
     ctx.beginPath()
     ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
@@ -362,18 +362,43 @@ class ShipTrail extends Mass
     ctx.fill()
 Gt.ShipTrail = ShipTrail
 
+class Bullet extends Mass
+  type: 'Bullet'
+  solid: false
+
+  constructor: (options) ->
+    @ship = options.ship
+    options ||= {}
+    options.radius ||= 5
+    options.position ||= @ship.position
+    options.velocity ||= new Vector(@ship.rotation).times(6)
+    options.lifetime = 100
+    super options
+
+  _render: (ctx) ->
+    ctx.fillStyle = 'rgb(89,163,89)'
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+Gt.Bullet = Bullet
+
 class Ship extends Mass
   type: 'Ship'
   value: 1000
   mass: 10
+  maxEnergy: 200
 
   constructor: (options) ->
     options ||= {}
     options.radius ||= 10
     options.layer = 2
+    @energy = options.energy or @maxEnergy
     @max_speed = 3
     @max_accel = 0.03
     @trailDelay = 0
+    @bulletDelay = 0
     super options
 
   _render: (ctx) ->
@@ -410,10 +435,25 @@ class Ship extends Mass
     @acceleration = accel
     @universe.update this
 
+  fire: ->
+    if @bulletDelay <= 0
+      return unless @power(-50)
+      @universe.add new Bullet { ship: this }
+      @bulletDelay = 10
+
+  power: (delta) ->
+    return false if @energy + delta < 0
+    @energy += delta
+    @energy = @maxEnergy if @energy > @maxEnergy
+    true
+
   step: ->
     dt = @universe.tick - @tick
     if this is @universe.ship
       @lifetime += dt
+      @power dt
+      @trailDelay -= dt
+      @bulletDelay -= dt
     return @remove() if (@lifetime -= dt) < 0
 
     for t in [0...dt]
@@ -427,7 +467,6 @@ class Ship extends Mass
       @acceleration = @acceleration.times 0.8 # drag
       @rotation += @rotationalVelocity
 
-    @trailDelay -= dt
     @tick = @universe.tick
 
   rotate: (dir) ->
