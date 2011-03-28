@@ -103,7 +103,9 @@
             case 39:
               return this.ship.rotate(+1);
             case 38:
-              return this.ship.thrust();
+              return this.ship.forward();
+            case 40:
+              return this.ship.backward();
           }
         }).call(this));
       }
@@ -443,7 +445,8 @@
       options || (options = {});
       options.radius || (options.radius = 10);
       options.layer = 2;
-      this.max_speed = 5;
+      this.max_speed = 3;
+      this.max_accel = 0.03;
       this.trailDelay = 0;
       Ship.__super__.constructor.call(this, options);
     }
@@ -467,14 +470,20 @@
       ctx.closePath();
       return ctx.stroke();
     };
-    Ship.prototype.thrust = function() {
+    Ship.prototype.forward = function() {
+      return this.thrust(this.acceleration.plus(new Vector(this.rotation).times(this.max_accel)));
+    };
+    Ship.prototype.backward = function() {
+      return this.thrust(this.acceleration.minus(new Vector(this.rotation).times(this.max_accel)));
+    };
+    Ship.prototype.thrust = function(accel) {
       if (this.trailDelay <= 0) {
         this.universe.add(new ShipTrail({
           ship: this
         }));
         this.trailDelay = 1;
       }
-      this.acceleration = this.acceleration.plus(new Vector(this.rotation).times(0.15));
+      this.acceleration = accel;
       return this.universe.update(this);
     };
     Ship.prototype.step = function() {
@@ -516,7 +525,7 @@
   CommandCentre = (function() {
     __extends(CommandCentre, Mass);
     CommandCentre.prototype.type = 'CommandCentre';
-    CommandCentre.prototype.mass = 1000;
+    CommandCentre.prototype.mass = Infinity;
     function CommandCentre(options) {
       options || (options = {});
       options.radius || (options.radius = 80);
