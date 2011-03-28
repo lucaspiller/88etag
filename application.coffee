@@ -31,6 +31,7 @@ class Universe
   constructor: (options) ->
     @canvas = options?.canvas
     @masses = new MassStorage
+    @players = new PlayerStorage
     @starfield = new Starfield
     @keys = []
     @tick = 0
@@ -68,7 +69,7 @@ class Universe
 
   step: ->
     @tick += 1
-    @player.step()
+    @players.step()
     @masses.step()
 
   render: ->
@@ -95,6 +96,7 @@ class Universe
   buildPlayer: ->
     @player = new LocalPlayer { universe: this }
     @player.build()
+    @players.add @player
 
   add: (mass) ->
     @masses.add mass
@@ -117,8 +119,42 @@ class Universe
           m1.handleCollision m2
 Gt.Universe = Universe
 
+class PlayerStorage
+  constructor: ->
+    @items = {}
+    @length = 0
+
+  find: (player) ->
+    @items[@key player]
+
+  add: (player) ->
+    return if @find(player)?
+    @length++
+    @set player
+
+  update: (player) ->
+    if @find(player)?
+      @set player
+    else
+      @add player
+
+  remove: (player) ->
+    return unless @find(player)?
+    @length--
+    delete @items[@key player]
+
+  key: (player) ->
+    player.id
+
+  set: (player) ->
+    @items[@key player] = player
+
+  step: ->
+    player.step() for id, player of @items
+
 class Player
   constructor: (options) ->
+    @id = Math.random(9999999999999) # TODO
     @universe = options.universe
     @score = 0
 

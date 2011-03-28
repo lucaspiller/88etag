@@ -1,5 +1,5 @@
 (function() {
-  var Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
+  var Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -46,6 +46,7 @@
     function Universe(options) {
       this.canvas = options != null ? options.canvas : void 0;
       this.masses = new MassStorage;
+      this.players = new PlayerStorage;
       this.starfield = new Starfield;
       this.keys = [];
       this.tick = 0;
@@ -86,7 +87,7 @@
     };
     Universe.prototype.step = function() {
       this.tick += 1;
-      this.player.step();
+      this.players.step();
       return this.masses.step();
     };
     Universe.prototype.render = function() {
@@ -117,7 +118,8 @@
       this.player = new LocalPlayer({
         universe: this
       });
-      return this.player.build();
+      this.player.build();
+      return this.players.add(this.player);
     };
     Universe.prototype.add = function(mass) {
       var _ref;
@@ -158,8 +160,56 @@
     return Universe;
   })();
   Gt.Universe = Universe;
+  PlayerStorage = (function() {
+    function PlayerStorage() {
+      this.items = {};
+      this.length = 0;
+    }
+    PlayerStorage.prototype.find = function(player) {
+      return this.items[this.key(player)];
+    };
+    PlayerStorage.prototype.add = function(player) {
+      if (this.find(player) != null) {
+        return;
+      }
+      this.length++;
+      return this.set(player);
+    };
+    PlayerStorage.prototype.update = function(player) {
+      if (this.find(player) != null) {
+        return this.set(player);
+      } else {
+        return this.add(player);
+      }
+    };
+    PlayerStorage.prototype.remove = function(player) {
+      if (this.find(player) == null) {
+        return;
+      }
+      this.length--;
+      return delete this.items[this.key(player)];
+    };
+    PlayerStorage.prototype.key = function(player) {
+      return player.id;
+    };
+    PlayerStorage.prototype.set = function(player) {
+      return this.items[this.key(player)] = player;
+    };
+    PlayerStorage.prototype.step = function() {
+      var id, player, _ref, _results;
+      _ref = this.items;
+      _results = [];
+      for (id in _ref) {
+        player = _ref[id];
+        _results.push(player.step());
+      }
+      return _results;
+    };
+    return PlayerStorage;
+  })();
   Player = (function() {
     function Player(options) {
+      this.id = Math.random(9999999999999);
       this.universe = options.universe;
       this.score = 0;
     }
