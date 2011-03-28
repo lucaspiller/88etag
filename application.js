@@ -1,5 +1,5 @@
 (function() {
-  var Bullet, CommandCentre, Controller, Gt, Mass, MassStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
+  var Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -49,11 +49,11 @@
       this.starfield = new Starfield;
       this.keys = [];
       this.tick = 0;
-      this.buildPlayer();
     }
     Universe.prototype.start = function() {
       this.setupCanvas();
       this.starfield.generate(this.viewpoint);
+      this.buildPlayer();
       return this.loop();
     };
     Universe.prototype.setupCanvas = function() {
@@ -65,7 +65,6 @@
     Universe.prototype.loop = function() {
       var delay, start, time;
       start = new Date().getTime();
-      this.checkInput();
       this.checkCollisions();
       this.step();
       this.render();
@@ -83,44 +82,17 @@
       return this.keys.push(key);
     };
     Universe.prototype.keyUp = function(key) {
-      this.keys = _.without(this.keys, key);
-      switch (key) {
-        case 37:
-        case 39:
-          return this.ship.rotate(0);
-      }
-    };
-    Universe.prototype.checkInput = function() {
-      var key, _i, _len, _ref, _results;
-      _ref = this.keys;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        key = _ref[_i];
-        _results.push((function() {
-          switch (key) {
-            case 37:
-              return this.ship.rotate(-1);
-            case 39:
-              return this.ship.rotate(+1);
-            case 38:
-              return this.ship.forward();
-            case 40:
-              return this.ship.backward();
-            case 68:
-              return this.ship.fire();
-          }
-        }).call(this));
-      }
-      return _results;
+      return this.keys = _.without(this.keys, key);
     };
     Universe.prototype.step = function() {
       this.tick += 1;
+      this.player.step();
       return this.masses.step();
     };
     Universe.prototype.render = function() {
       var ctx;
-      if (this.ship != null) {
-        this.viewpoint.update(this.ship);
+      if (this.player.ship != null) {
+        this.viewpoint.update(this.player.ship);
       }
       ctx = this.ctx;
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -133,31 +105,19 @@
     };
     Universe.prototype.renderGUI = function(ctx) {
       var powerWidth;
-      powerWidth = (this.ship.energy / this.ship.maxEnergy) * 200;
-      ctx.save();
-      ctx.fillStyle = 'rgb(255, 0, 0)';
-      ctx.fillRect(30, this.canvas.height - 40, powerWidth, 5);
-      return ctx.restore();
+      if (this.player.ship != null) {
+        powerWidth = (this.player.ship.energy / this.player.ship.maxEnergy) * 200;
+        ctx.save();
+        ctx.fillStyle = 'rgb(255, 0, 0)';
+        ctx.fillRect(30, this.canvas.height - 40, powerWidth, 5);
+        return ctx.restore();
+      }
     };
     Universe.prototype.buildPlayer = function() {
-      var h, w, x, y, _ref, _ref2, _ref3, _ref4;
-      _ref3 = [(_ref = this.canvas) != null ? _ref.width : void 0, (_ref2 = this.canvas) != null ? _ref2.height : void 0], w = _ref3[0], h = _ref3[1];
-      _ref4 = [Math.random() * w / 2 + w / 4, Math.random() * h / 2 + h / 4], x = _ref4[0], y = _ref4[1];
-      this.commandCentre = new CommandCentre({
-        position: new Vector(x, y)
+      this.player = new LocalPlayer({
+        universe: this
       });
-      this.add(this.commandCentre);
-      return this.buildShip();
-    };
-    Universe.prototype.buildShip = function() {
-      var x, y;
-      x = this.commandCentre.position.x;
-      y = this.commandCentre.position.y + this.commandCentre.radius;
-      this.ship = new Ship({
-        position: new Vector(x, y),
-        rotation: Math.PI / 2
-      });
-      return this.add(this.ship);
+      return this.player.build();
     };
     Universe.prototype.add = function(mass) {
       var _ref;
@@ -198,6 +158,71 @@
     return Universe;
   })();
   Gt.Universe = Universe;
+  Player = (function() {
+    function Player(options) {
+      this.universe = options.universe;
+      this.score = 0;
+    }
+    Player.prototype.build = function() {
+      var h, w, x, y, _ref, _ref2, _ref3, _ref4;
+      _ref3 = [(_ref = this.universe.canvas) != null ? _ref.width : void 0, (_ref2 = this.universe.canvas) != null ? _ref2.height : void 0], w = _ref3[0], h = _ref3[1];
+      _ref4 = [Math.random() * w / 2 + w / 4, Math.random() * h / 2 + h / 4], x = _ref4[0], y = _ref4[1];
+      this.commandCentre = new CommandCentre({
+        position: new Vector(x, y)
+      });
+      this.universe.add(this.commandCentre);
+      return this.buildShip();
+    };
+    Player.prototype.buildShip = function() {
+      var x, y;
+      x = this.commandCentre.position.x;
+      y = this.commandCentre.position.y + this.commandCentre.radius;
+      this.ship = new Ship({
+        position: new Vector(x, y),
+        rotation: Math.PI / 2
+      });
+      return this.universe.add(this.ship);
+    };
+    Player.prototype.step = function() {
+      return true;
+    };
+    return Player;
+  })();
+  LocalPlayer = (function() {
+    __extends(LocalPlayer, Player);
+    function LocalPlayer(options) {
+      LocalPlayer.__super__.constructor.call(this, options);
+    }
+    LocalPlayer.prototype.step = function() {
+      var key, _i, _len, _ref;
+      if (this.ship != null) {
+        _ref = this.universe.keys;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          key = _ref[_i];
+          switch (key) {
+            case 37:
+              this.ship.rotate(-1);
+              break;
+            case 39:
+              this.ship.rotate(+1);
+              break;
+            case 38:
+              this.ship.forward();
+              break;
+            case 40:
+              this.ship.backward();
+              break;
+            case 68:
+              this.ship.fire();
+          }
+        }
+        if (!_.include(this.universe.keys, 37) && !_.include(this.universe.keys, 39)) {
+          return this.ship.rotate(0);
+        }
+      }
+    };
+    return LocalPlayer;
+  })();
   Star = (function() {
     Star.prototype.STAR_RADIUS = 1.5;
     function Star(options) {
@@ -578,7 +603,7 @@
     Ship.prototype.step = function() {
       var dt, newVelocity, t;
       dt = this.universe.tick - this.tick;
-      if (this === this.universe.ship) {
+      if (this === this.universe.player.ship) {
         this.lifetime += dt;
         this.power(dt);
         this.trailDelay -= dt;

@@ -34,11 +34,11 @@ class Universe
     @starfield = new Starfield
     @keys = []
     @tick = 0
-    @buildPlayer()
 
   start: ->
     @setupCanvas()
     @starfield.generate @viewpoint
+    @buildPlayer()
     @loop()
 
   setupCanvas: ->
@@ -49,7 +49,6 @@ class Universe
 
   loop: ->
     start = new Date().getTime()
-    @checkInput()
     @checkCollisions()
     @step()
     @render()
@@ -67,31 +66,13 @@ class Universe
   keyUp: (key) ->
     @keys = _.without @keys, key
 
-    # stop ship rotation
-    switch key
-      when 37, 39
-        @ship.rotate(0)
-
-  checkInput: ->
-    for key in @keys
-      switch key
-        when 37 # left
-          @ship.rotate(-1)
-        when 39 # right
-          @ship.rotate(+1)
-        when 38 # up
-          @ship.forward()
-        when 40 # down
-          @ship.backward()
-        when 68 # d
-          @ship.fire()
-
   step: ->
     @tick += 1
+    @player.step()
     @masses.step()
 
   render: ->
-    @viewpoint.update @ship if @ship?
+    @viewpoint.update @player.ship if @player.ship?
 
     ctx = @ctx
     ctx.clearRect 0, 0, @canvas.width, @canvas.height
@@ -104,32 +85,16 @@ class Universe
     @renderGUI ctx
 
   renderGUI: (ctx) ->
-    powerWidth = (@ship.energy / @ship.maxEnergy) * 200
-    ctx.save()
-    ctx.fillStyle = 'rgb(255, 0, 0)'
-    ctx.fillRect 30, @canvas.height - 40, powerWidth, 5
-    ctx.restore()
-
+    if @player.ship?
+      powerWidth = (@player.ship.energy / @player.ship.maxEnergy) * 200
+      ctx.save()
+      ctx.fillStyle = 'rgb(255, 0, 0)'
+      ctx.fillRect 30, @canvas.height - 40, powerWidth, 5
+      ctx.restore()
 
   buildPlayer: ->
-    [w, h] = [@canvas?.width, @canvas?.height]
-    [x, y] = [Math.random() * w/2 + w/4, Math.random() * h/2 + h/4]
-
-    @commandCentre = new CommandCentre {
-      position: new Vector x, y
-    }
-    @add @commandCentre
-    @buildShip()
-
-  buildShip: ->
-    x = @commandCentre.position.x
-    y = @commandCentre.position.y + @commandCentre.radius
-
-    @ship = new Ship {
-      position: new Vector x, y
-      rotation: Math.PI / 2
-    }
-    @add @ship
+    @player = new LocalPlayer { universe: this }
+    @player.build()
 
   add: (mass) ->
     @masses.add mass
@@ -151,6 +116,56 @@ class Universe
         if m1.overlaps m2
           m1.handleCollision m2
 Gt.Universe = Universe
+
+class Player
+  constructor: (options) ->
+    @universe = options.universe
+    @score = 0
+
+  build: ->
+    [w, h] = [@universe.canvas?.width, @universe.canvas?.height]
+    [x, y] = [Math.random() * w/2 + w/4, Math.random() * h/2 + h/4]
+
+    @commandCentre = new CommandCentre {
+      position: new Vector x, y
+    }
+    @universe.add @commandCentre
+    @buildShip()
+
+  buildShip: ->
+    x = @commandCentre.position.x
+    y = @commandCentre.position.y + @commandCentre.radius
+
+    @ship = new Ship {
+      position: new Vector x, y
+      rotation: Math.PI / 2
+    }
+    @universe.add @ship
+
+  step: ->
+    true
+
+class LocalPlayer extends Player
+  constructor: (options) ->
+    super options
+
+  step: ->
+    if @ship?
+      for key in @universe.keys
+        switch key
+          when 37 # left
+            @ship.rotate(-1)
+          when 39 # right
+            @ship.rotate(+1)
+          when 38 # up
+            @ship.forward()
+          when 40 # down
+            @ship.backward()
+          when 68 # d
+            @ship.fire()
+
+      if !_.include(@universe.keys, 37) and !_.include(@universe.keys, 39)
+        @ship.rotate(0)
 
 class Star
   STAR_RADIUS: 1.5
@@ -481,7 +496,7 @@ class Ship extends Mass
 
   step: ->
     dt = @universe.tick - @tick
-    if this is @universe.ship
+    if this is @universe.player.ship
       @lifetime += dt
       @power dt
       @trailDelay -= dt
