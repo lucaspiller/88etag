@@ -93,6 +93,38 @@ class Universe
       ctx.fillRect 30, @canvas.height - 40, powerWidth, 5
       ctx.restore()
 
+    @renderCcHelpers ctx
+
+  renderCcHelpers: (ctx) ->
+    for id, player of @players.items
+      if player.commandCentre?
+        if @viewpoint.offscreen player.commandCentre.position
+          vector = player.commandCentre.position.minus(@viewpoint.position)
+          if vector.x < 0
+            vector.x = 0
+          else if vector.x > @viewpoint.width
+            vector.x = @viewpoint.width
+
+          if vector.y < 0
+            vector.y = 0
+          else if vector.y > @viewpoint.height
+            vector.y = @viewpoint.height
+
+          ctx.save()
+          ctx.lineWidth = 3
+
+          if player == @player
+            ctx.strokeStyle = 'rgb(0, 255, 0)'
+          else
+            ctx.strokeStyle = 'rgb(255, 0, 0)'
+
+          ctx.translate vector.x, vector.y
+          ctx.beginPath()
+          ctx.arc 0, 0, 5, 0, Math.PI * 2, true
+          ctx.closePath()
+          ctx.stroke()
+          ctx.restore()
+
   buildPlayer: ->
     @player = new LocalPlayer { universe: this }
     @player.build()
@@ -649,7 +681,11 @@ class Viewpoint
     @position.y = ship.position.y - (@height / 2)
 
   translate: (ctx) ->
-    ctx.translate(-@position.x, -@position.y)
+    ctx.translate -@position.x, -@position.y
+
+  offscreen: (vector) ->
+    vector = vector.minus @position
+    vector.x < 0 || vector.x > @width || vector.y < 0 || vector.y > @height
 
 class Vector
   # can pass either x, y coords or radians for a unit vector

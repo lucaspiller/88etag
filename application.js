@@ -111,8 +111,19 @@
         ctx.save();
         ctx.fillStyle = 'rgb(255, 0, 0)';
         ctx.fillRect(30, this.canvas.height - 40, powerWidth, 5);
-        return ctx.restore();
+        ctx.restore();
       }
+      return this.renderCcHelpers(ctx);
+    };
+    Universe.prototype.renderCcHelpers = function(ctx) {
+      var id, player, vector, _ref, _results;
+      _ref = this.players.items;
+      _results = [];
+      for (id in _ref) {
+        player = _ref[id];
+        _results.push(player.commandCentre != null ? this.viewpoint.offscreen(player.commandCentre.position) ? (vector = player.commandCentre.position.minus(this.viewpoint.position), vector.x < 0 ? vector.x = 0 : vector.x > this.viewpoint.width ? vector.x = this.viewpoint.width : void 0, vector.y < 0 ? vector.y = 0 : vector.y > this.viewpoint.height ? vector.y = this.viewpoint.height : void 0, ctx.save(), ctx.lineWidth = 3, player === this.player ? ctx.strokeStyle = 'rgb(0, 255, 0)' : ctx.strokeStyle = 'rgb(255, 0, 0)', ctx.translate(vector.x, vector.y), ctx.beginPath(), ctx.arc(0, 0, 5, 0, Math.PI * 2, true), ctx.closePath(), ctx.stroke(), ctx.restore()) : void 0 : void 0);
+      }
+      return _results;
     };
     Universe.prototype.buildPlayer = function() {
       var ai;
@@ -775,6 +786,10 @@
     };
     Viewpoint.prototype.translate = function(ctx) {
       return ctx.translate(-this.position.x, -this.position.y);
+    };
+    Viewpoint.prototype.offscreen = function(vector) {
+      vector = vector.minus(this.position);
+      return vector.x < 0 || vector.x > this.width || vector.y < 0 || vector.y > this.height;
     };
     return Viewpoint;
   })();
