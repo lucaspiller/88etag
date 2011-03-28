@@ -260,6 +260,7 @@ class MassStorage
 class Mass
   type: 'Unknown'
   mass: 1
+  maxHealth: 1
   solid: true
 
   constructor: (options) ->
@@ -273,7 +274,7 @@ class Mass
     @rotationalVelocity = o.rotationalVelocity or 0
     @lifetime = o.lifetime or 24 * 60
     @layer = o.layer or 0
-    @health = o.health or 1
+    @health = o.health or @maxHealth
 
   explode: ->
     @remove()
@@ -513,6 +514,7 @@ Gt.Ship = Ship
 class CommandCentre extends Mass
   type: 'CommandCentre'
   mass: 999999999999999999
+  maxHealth: 10000
 
   constructor: (options) ->
     options ||= {}
@@ -558,7 +560,7 @@ class CommandCentre extends Mass
 
     ctx.fillStyle = 'rgb(0,68,0)'
     ctx.beginPath()
-    ctx.arc 0, 0, (@radius / 2) * 0.9, 0, Math.PI * 2, true
+    ctx.arc 0, 0, 0.9 * (@radius / 2) * (@health / @maxHealth), 0, Math.PI * 2, true
     ctx.closePath()
     ctx.fill()
 

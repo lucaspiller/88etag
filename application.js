@@ -331,6 +331,7 @@
   Mass = (function() {
     Mass.prototype.type = 'Unknown';
     Mass.prototype.mass = 1;
+    Mass.prototype.maxHealth = 1;
     Mass.prototype.solid = true;
     function Mass(options) {
       var o;
@@ -344,7 +345,7 @@
       this.rotationalVelocity = o.rotationalVelocity || 0;
       this.lifetime = o.lifetime || 24 * 60;
       this.layer = o.layer || 0;
-      this.health = o.health || 1;
+      this.health = o.health || this.maxHealth;
     }
     Mass.prototype.explode = function() {
       return this.remove();
@@ -616,6 +617,7 @@
     __extends(CommandCentre, Mass);
     CommandCentre.prototype.type = 'CommandCentre';
     CommandCentre.prototype.mass = 999999999999999999;
+    CommandCentre.prototype.maxHealth = 10000;
     function CommandCentre(options) {
       options || (options = {});
       options.radius || (options.radius = 80);
@@ -656,7 +658,7 @@
       ctx.fill();
       ctx.fillStyle = 'rgb(0,68,0)';
       ctx.beginPath();
-      ctx.arc(0, 0, (this.radius / 2) * 0.9, 0, Math.PI * 2, true);
+      ctx.arc(0, 0, 0.9 * (this.radius / 2) * (this.health / this.maxHealth), 0, Math.PI * 2, true);
       ctx.closePath();
       return ctx.fill();
     };
