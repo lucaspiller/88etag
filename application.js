@@ -382,8 +382,6 @@
     MassStorage.prototype.update = function(mass) {
       if (this.find(mass) != null) {
         return this.set(mass);
-      } else {
-        return this.add(mass);
       }
     };
     MassStorage.prototype.remove = function(mass) {
@@ -718,6 +716,12 @@
         this.rotationalVelocity = 0;
       }
       return this.universe.update(this);
+    };
+    Ship.prototype.explode = function() {
+      Ship.__super__.explode.apply(this, arguments);
+      if (this.player.local) {
+        return this.player.buildShip;
+      }
     };
     return Ship;
   })();

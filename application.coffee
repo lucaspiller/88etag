@@ -332,8 +332,6 @@ class MassStorage
   update: (mass) ->
     if @find(mass)?
       @set mass
-    else
-      @add mass
 
   remove: (mass) ->
     return unless @find(mass)?
@@ -613,6 +611,11 @@ class Ship extends Mass
     else if dir == 0
       @rotationalVelocity = 0
     @universe.update this
+
+  explode: ->
+    super
+    if @player.local
+      @player.buildShip
 Gt.Ship = Ship
 
 class CommandCentre extends Mass
