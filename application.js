@@ -66,6 +66,7 @@
       var delay, start, time;
       start = new Date().getTime();
       this.checkInput();
+      this.checkCollisions();
       this.step();
       this.render();
       time = new Date().getTime() - start;
@@ -161,6 +162,25 @@
     };
     Universe.prototype.remove = function(mass) {
       return this.masses.remove(mass);
+    };
+    Universe.prototype.checkCollisions = function() {
+      var id, m1, m2, _ref, _results;
+      _ref = this.masses.items;
+      _results = [];
+      for (id in _ref) {
+        m1 = _ref[id];
+        _results.push((function() {
+          var _ref, _results;
+          _ref = this.masses.items;
+          _results = [];
+          for (id in _ref) {
+            m2 = _ref[id];
+            _results.push(m1.overlaps(m2) ? m1.handleCollision(m2) : void 0);
+          }
+          return _results;
+        }).call(this));
+      }
+      return _results;
     };
     return Universe;
   })();
@@ -296,6 +316,8 @@
     return MassStorage;
   })();
   Mass = (function() {
+    Mass.prototype.type = 'Unknown';
+    Mass.prototype.mass = 1;
     function Mass(options) {
       var o;
       o = options || {};
@@ -318,8 +340,42 @@
       if (!(this.solid && other.solid && other !== this)) {
         return false;
       }
-      diff = other.position.minus(this.position).length;
-      return diff < this.radius || diff < other.radius;
+      diff = other.position.minus(this.position).length();
+      return diff < (other.radius + this.radius);
+    };
+    Mass.prototype.handleCollision = function(other) {
+      var m1, m2, v1, v1x, v1y, v2, v2x, v2y, x, x1, x2, _results;
+      x = this.position.minus(other.position).normalized();
+      v1 = this.velocity;
+      x1 = x.dotProduct(v1);
+      v1x = x.times(x1);
+      v1y = v1.minus(v1x);
+      m1 = this.mass;
+      x = x.times(-1);
+      v2 = other.velocity;
+      x2 = x.dotProduct(v2);
+      v2x = x.times(x2);
+      v2y = v2.minus(v2x);
+      m2 = other.mass;
+      this.velocity = v1x.times((m1 - m2) / (m1 + m2)).plus(v2x.times((2 * m2) / (m1 + m2)).plus(v1y));
+      this.velocity._zeroSmall();
+      this.acceleration = new Vector(0, 0);
+      other.velocity = v1x.times((2 * m1) / (m1 + m2)).plus(v2x.times((m2 - m1) / (m1 + m2)).plus(v2y));
+      other.velocity._zeroSmall();
+      other.acceleration = new Vector(0, 0);
+      if (this.velocity.length() === 0 && other.velocity.length() === 0) {
+        if (m1 < m2) {
+          this.velocity = x.times(-1);
+        } else {
+          other.velocity = x.times(1);
+        }
+      }
+      _results = [];
+      while (this.overlaps(other)) {
+        this.position = this.position.plus(this.velocity);
+        _results.push(other.position = other.position.plus(other.velocity));
+      }
+      return _results;
     };
     Mass.prototype.step = function() {
       var dt, t;
@@ -356,6 +412,7 @@
     __extends(ShipTrail, Mass);
     ShipTrail.prototype.LIFETIME = 40;
     ShipTrail.prototype.type = 'ShipTrail';
+    ShipTrail.prototype.solid = false;
     function ShipTrail(options) {
       var ship;
       ship = options.ship;
@@ -381,6 +438,7 @@
     __extends(Ship, Mass);
     Ship.prototype.type = 'Ship';
     Ship.prototype.value = 1000;
+    Ship.prototype.mass = 10;
     function Ship(options) {
       options || (options = {});
       options.radius || (options.radius = 10);
@@ -458,6 +516,7 @@
   CommandCentre = (function() {
     __extends(CommandCentre, Mass);
     CommandCentre.prototype.type = 'CommandCentre';
+    CommandCentre.prototype.mass = 1000;
     function CommandCentre(options) {
       options || (options = {});
       options.radius || (options.radius = 80);
@@ -543,6 +602,9 @@
     };
     Vector.prototype.normalized = function() {
       return this.times(1.0 / this.length());
+    };
+    Vector.prototype.dotProduct = function(other) {
+      return (this.x * other.x) + (this.y * other.y);
     };
     Vector.prototype.clone = function() {
       return new Vector(this.x, this.y, this.z);

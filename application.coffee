@@ -50,6 +50,7 @@ class Universe
   loop: ->
     start = new Date().getTime()
     @checkInput()
+    @checkCollisions()
     @step()
     @render()
     time = new Date().getTime() - start
@@ -129,6 +130,12 @@ class Universe
 
   remove: (mass) ->
     @masses.remove mass
+
+  checkCollisions: ->
+    for id, m1 of @masses.items
+      for id, m2 of @masses.items
+        if m1.overlaps m2
+          m1.handleCollision m2
 Gt.Universe = Universe
 
 class Star
@@ -237,6 +244,9 @@ class MassStorage
     mass.step() for id, mass of @items
 
 class Mass
+  type: 'Unknown'
+  mass: 1
+
   constructor: (options) ->
     o = options or {}
     @id = Math.random(9999999999999) # TODO
@@ -255,8 +265,45 @@ class Mass
   solid: true
   overlaps: (other) ->
     return false unless @solid and other.solid and other != this
-    diff = other.position.minus(@position).length
-    diff < @radius or diff < other.radius
+    diff = other.position.minus(@position).length()
+    diff < (other.radius + @radius)
+
+  handleCollision: (other) ->
+    x = @position.minus(other.position).normalized()
+    v1 = @velocity
+    x1 = x.dotProduct(v1)
+    v1x = x.times(x1)
+    v1y = v1.minus(v1x)
+    m1 = @mass
+
+    x = x.times(-1)
+    v2 = other.velocity
+    x2 = x.dotProduct(v2)
+    v2x = x.times(x2)
+    v2y = v2.minus(v2x)
+    m2 = other.mass
+
+    @velocity = v1x.times((m1 - m2) / (m1 + m2)).plus(v2x.times((2 * m2) / (m1 + m2)).plus(v1y))
+    @velocity._zeroSmall()
+    @acceleration = new Vector 0, 0
+
+    other.velocity = v1x.times((2 * m1) / (m1 + m2)).plus(v2x.times((m2 - m1) / (m1 + m2)).plus(v2y))
+    other.velocity._zeroSmall()
+    other.acceleration = new Vector 0, 0
+
+    # check that both velocities aren't zero, if so set the
+    # velocity of the object with the smallest mass to be the normal
+    if @velocity.length() == 0 and other.velocity.length() == 0
+      if m1 < m2
+        @velocity = x.times -1
+      else
+        other.velocity = x.times 1
+
+    # make sure the objects are no longer touching, otherwise
+    # hack away until they aren't
+    while @overlaps other
+      @position = @position.plus(@velocity)
+      other.position = other.position.plus(other.velocity)
 
   step: ->
     dt = @universe.tick - @tick
@@ -292,6 +339,7 @@ class ShipTrail extends Mass
   LIFETIME: 40
 
   type: 'ShipTrail'
+  solid: false
   constructor: (options) ->
     ship = options.ship
     options.radius ||= 2
@@ -313,6 +361,7 @@ Gt.ShipTrail = ShipTrail
 class Ship extends Mass
   type: 'Ship'
   value: 1000
+  mass: 10
 
   constructor: (options) ->
     options ||= {}
@@ -382,6 +431,7 @@ Gt.Ship = Ship
 
 class CommandCentre extends Mass
   type: 'CommandCentre'
+  mass: 1000
 
   constructor: (options) ->
     options ||= {}
@@ -469,6 +519,9 @@ class Vector
 
   normalized: ->
     @times 1.0 / @length()
+
+  dotProduct: (other) ->
+    (@x * other.x) + (@y * other.y)# + (@z * other.z)
 
   clone: ->
     new Vector @x, @y, @z
