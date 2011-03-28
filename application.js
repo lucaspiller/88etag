@@ -1,5 +1,5 @@
 (function() {
-  var Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
+  var AiPlayer, Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -115,11 +115,17 @@
       }
     };
     Universe.prototype.buildPlayer = function() {
+      var ai;
       this.player = new LocalPlayer({
         universe: this
       });
       this.player.build();
-      return this.players.add(this.player);
+      this.players.add(this.player);
+      ai = new AiPlayer({
+        universe: this
+      });
+      ai.build();
+      return this.players.add(ai);
     };
     Universe.prototype.add = function(mass) {
       var _ref;
@@ -208,6 +214,7 @@
     return PlayerStorage;
   })();
   Player = (function() {
+    Player.prototype.local = false;
     function Player(options) {
       this.id = Math.random(9999999999999);
       this.universe = options.universe;
@@ -216,9 +223,10 @@
     Player.prototype.build = function() {
       var h, w, x, y, _ref, _ref2, _ref3, _ref4;
       _ref3 = [(_ref = this.universe.canvas) != null ? _ref.width : void 0, (_ref2 = this.universe.canvas) != null ? _ref2.height : void 0], w = _ref3[0], h = _ref3[1];
-      _ref4 = [Math.random() * w / 2 + w / 4, Math.random() * h / 2 + h / 4], x = _ref4[0], y = _ref4[1];
+      _ref4 = [Math.random() * w * 8, Math.random() * h * 8], x = _ref4[0], y = _ref4[1];
       this.commandCentre = new CommandCentre({
-        position: new Vector(x, y)
+        position: new Vector(x, y),
+        player: this
       });
       this.universe.add(this.commandCentre);
       return this.buildShip();
@@ -229,7 +237,8 @@
       y = this.commandCentre.position.y + this.commandCentre.radius;
       this.ship = new Ship({
         position: new Vector(x, y),
-        rotation: Math.PI / 2
+        rotation: Math.PI / 2,
+        player: this
       });
       return this.universe.add(this.ship);
     };
@@ -240,6 +249,7 @@
   })();
   LocalPlayer = (function() {
     __extends(LocalPlayer, Player);
+    LocalPlayer.prototype.local = true;
     function LocalPlayer(options) {
       LocalPlayer.__super__.constructor.call(this, options);
     }
@@ -272,6 +282,18 @@
       }
     };
     return LocalPlayer;
+  })();
+  AiPlayer = (function() {
+    __extends(AiPlayer, Player);
+    AiPlayer.prototype.local = true;
+    function AiPlayer(options) {
+      AiPlayer.__super__.constructor.call(this, options);
+    }
+    AiPlayer.prototype.step = function() {
+      this.ship.rotate(-1);
+      return this.ship.forward();
+    };
+    return AiPlayer;
   })();
   Star = (function() {
     Star.prototype.STAR_RADIUS = 1.5;
@@ -418,6 +440,7 @@
       this.acceleration = o.acceleration || new Vector();
       this.rotation = o.rotation || 0;
       this.rotationalVelocity = o.rotationalVelocity || 0;
+      this.player = o.player;
       this.lifetime = o.lifetime || 24 * 60;
       this.layer = o.layer || 0;
       this.health = o.health || this.maxHealth;
@@ -653,7 +676,7 @@
     Ship.prototype.step = function() {
       var dt, newVelocity, t;
       dt = this.universe.tick - this.tick;
-      if (this === this.universe.player.ship) {
+      if (this.player.local) {
         this.lifetime += dt;
         this.power(dt);
         this.trailDelay -= dt;

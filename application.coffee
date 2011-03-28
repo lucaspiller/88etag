@@ -98,6 +98,10 @@ class Universe
     @player.build()
     @players.add @player
 
+    ai = new AiPlayer { universe: this }
+    ai.build()
+    @players.add ai
+
   add: (mass) ->
     @masses.add mass
     mass.universe = this
@@ -153,6 +157,8 @@ class PlayerStorage
     player.step() for id, player of @items
 
 class Player
+  local: false
+
   constructor: (options) ->
     @id = Math.random(9999999999999) # TODO
     @universe = options.universe
@@ -160,10 +166,11 @@ class Player
 
   build: ->
     [w, h] = [@universe.canvas?.width, @universe.canvas?.height]
-    [x, y] = [Math.random() * w/2 + w/4, Math.random() * h/2 + h/4]
+    [x, y] = [Math.random() * w * 8, Math.random() * h * 8]
 
     @commandCentre = new CommandCentre {
       position: new Vector x, y
+      player: this
     }
     @universe.add @commandCentre
     @buildShip()
@@ -175,6 +182,7 @@ class Player
     @ship = new Ship {
       position: new Vector x, y
       rotation: Math.PI / 2
+      player: this
     }
     @universe.add @ship
 
@@ -182,6 +190,8 @@ class Player
     true
 
 class LocalPlayer extends Player
+  local: true
+
   constructor: (options) ->
     super options
 
@@ -202,6 +212,16 @@ class LocalPlayer extends Player
 
       if !_.include(@universe.keys, 37) and !_.include(@universe.keys, 39)
         @ship.rotate(0)
+
+class AiPlayer extends Player
+  local: true
+
+  constructor: (options) ->
+    super options
+
+  step: ->
+    @ship.rotate(-1)
+    @ship.forward()
 
 class Star
   STAR_RADIUS: 1.5
@@ -323,6 +343,7 @@ class Mass
     @acceleration = o.acceleration or new Vector()
     @rotation = o.rotation or 0
     @rotationalVelocity = o.rotationalVelocity or 0
+    @player = o.player
     @lifetime = o.lifetime or 24 * 60
     @layer = o.layer or 0
     @health = o.health or @maxHealth
@@ -532,7 +553,7 @@ class Ship extends Mass
 
   step: ->
     dt = @universe.tick - @tick
-    if this is @universe.player.ship
+    if @player.local
       @lifetime += dt
       @power dt
       @trailDelay -= dt
