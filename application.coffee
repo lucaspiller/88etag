@@ -76,7 +76,13 @@ class Universe
     @viewpoint.update @player.ship if @player.ship?
 
     ctx = @ctx
-    ctx.clearRect 0, 0, @canvas.width, @canvas.height
+    if @respawnGraphics
+      ctx.save()
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'
+      ctx.fillRect 0, 0, @canvas.width, @canvas.height
+      ctx.restore()
+    else
+      ctx.clearRect 0, 0, @canvas.width, @canvas.height
     ctx.save()
     @starfield.render ctx, @viewpoint
     @viewpoint.translate ctx
@@ -189,7 +195,7 @@ class PlayerStorage
     player.step() for id, player of @items
 
 class Player
-  RESPAWN_DELAY = 2500
+  RESPAWN_DELAY = 5000
 
   local: false
 
@@ -223,6 +229,10 @@ class Player
   respawn: ->
     setTimeout () =>
       @buildShip()
+      @universe.respawnGraphics = true
+      setTimeout () =>
+        @universe.respawnGraphics = false
+      , RESPAWN_DELAY / 2
     , RESPAWN_DELAY
 
   step: ->

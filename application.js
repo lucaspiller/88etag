@@ -109,7 +109,14 @@ Universe = (function() {
     var ctx;
     if (this.player.ship != null) this.viewpoint.update(this.player.ship);
     ctx = this.ctx;
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.respawnGraphics) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.restore();
+    } else {
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
     ctx.save();
     this.starfield.render(ctx, this.viewpoint);
     this.viewpoint.translate(ctx);
@@ -293,7 +300,7 @@ PlayerStorage = (function() {
 Player = (function() {
   var RESPAWN_DELAY;
 
-  RESPAWN_DELAY = 2500;
+  RESPAWN_DELAY = 5000;
 
   Player.prototype.local = false;
 
@@ -330,7 +337,11 @@ Player = (function() {
   Player.prototype.respawn = function() {
     var _this = this;
     return setTimeout(function() {
-      return _this.buildShip();
+      _this.buildShip();
+      _this.universe.respawnGraphics = true;
+      return setTimeout(function() {
+        return _this.universe.respawnGraphics = false;
+      }, RESPAWN_DELAY / 2);
     }, RESPAWN_DELAY);
   };
 
