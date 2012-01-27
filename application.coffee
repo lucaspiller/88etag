@@ -258,9 +258,21 @@ class LocalPlayer extends Player
             @ship.backward()
           when 68 # d
             @ship.fire()
+          when 81 # q
+            @buildTurret()
+            @universe.keys = _.without @universe.keys, 81 # TODO hack
+          else
+            console.log 'Key down', key
 
       if !_.include(@universe.keys, 37) and !_.include(@universe.keys, 39)
         @ship.rotate(0)
+
+  buildTurret: ->
+    turret = new Turret {
+      position: @ship.position,
+      player: this
+    }
+    @universe.add turret
 
 class AiPlayer extends Player
   ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
@@ -722,6 +734,56 @@ class CommandCentre extends Mass
     ctx.arc 0, 0, 0.9 * (@radius / 2) * (@health / @maxHealth), 0, Math.PI * 2, true
     ctx.closePath()
     ctx.fill()
+
+class Turret extends Mass
+  type: 'Turret'
+  mass: 5000
+  maxHealth: 1000
+
+  constructor: (options) ->
+    options ||= {}
+    options.radius ||= 15
+    options.layer = 1
+    @turretRotation = 0
+    super options
+
+  step: ->
+    dt = @universe.tick - @tick
+    @lifetime += dt
+    @turretRotation += Math.PI / 512
+    super
+
+  _render: (ctx) ->
+    # base box
+    ctx.lineWidth = 3
+    ctx.strokeStyle = 'rgb(195, 231, 247)'
+    size = @radius * 1.3; ctx.strokeRect -size, -size, size * 2, size * 2
+    size = @radius * 1.0; ctx.strokeRect -size, -size, size * 2, size * 2
+    size = @radius * 0.7; ctx.strokeRect -size, -size, size * 2, size * 2
+    size = @radius * 0.4; ctx.strokeRect -size, -size, size * 2, size * 2
+
+    # health bar
+    ctx.fillStyle = 'rgb(0, 25, 0)'
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius / 2, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = 'rgb(0,68,0)'
+    ctx.beginPath()
+    ctx.arc 0, 0, 0.9 * (@radius / 2) * (@health / @maxHealth), 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    # turret
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.stroke()
+
+    ctx.rotate @turretRotation
+    ctx.strokeStyle = 'rgb(135, 157, 168, 1)'
+    ctx.strokeRect -@radius / 4, -@radius, @radius / 2, @radius * 3
 
 class Viewpoint
   BUFFER: 40

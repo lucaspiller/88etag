@@ -1,4 +1,4 @@
-var AiPlayer, Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Universe, Vector, Viewpoint, WeaponsFire,
+var AiPlayer, Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Turret, Universe, Vector, Viewpoint, WeaponsFire,
   __hasProp = Object.prototype.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -384,12 +384,28 @@ LocalPlayer = (function(_super) {
             break;
           case 68:
             this.ship.fire();
+            break;
+          case 81:
+            this.buildTurret();
+            this.universe.keys = _.without(this.universe.keys, 81);
+            break;
+          default:
+            console.log('Key down', key);
         }
       }
       if (!_.include(this.universe.keys, 37) && !_.include(this.universe.keys, 39)) {
         return this.ship.rotate(0);
       }
     }
+  };
+
+  LocalPlayer.prototype.buildTurret = function() {
+    var turret;
+    turret = new Turret({
+      position: this.ship.position,
+      player: this
+    });
+    return this.universe.add(turret);
   };
 
   return LocalPlayer;
@@ -1012,6 +1028,67 @@ CommandCentre = (function(_super) {
   };
 
   return CommandCentre;
+
+})(Mass);
+
+Turret = (function(_super) {
+
+  __extends(Turret, _super);
+
+  Turret.prototype.type = 'Turret';
+
+  Turret.prototype.mass = 5000;
+
+  Turret.prototype.maxHealth = 1000;
+
+  function Turret(options) {
+    options || (options = {});
+    options.radius || (options.radius = 15);
+    options.layer = 1;
+    this.turretRotation = 0;
+    Turret.__super__.constructor.call(this, options);
+  }
+
+  Turret.prototype.step = function() {
+    var dt;
+    dt = this.universe.tick - this.tick;
+    this.lifetime += dt;
+    this.turretRotation += Math.PI / 512;
+    return Turret.__super__.step.apply(this, arguments);
+  };
+
+  Turret.prototype._render = function(ctx) {
+    var size;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgb(195, 231, 247)';
+    size = this.radius * 1.3;
+    ctx.strokeRect(-size, -size, size * 2, size * 2);
+    size = this.radius * 1.0;
+    ctx.strokeRect(-size, -size, size * 2, size * 2);
+    size = this.radius * 0.7;
+    ctx.strokeRect(-size, -size, size * 2, size * 2);
+    size = this.radius * 0.4;
+    ctx.strokeRect(-size, -size, size * 2, size * 2);
+    ctx.fillStyle = 'rgb(0, 25, 0)';
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius / 2, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgb(0,68,0)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 0.9 * (this.radius / 2) * (this.health / this.maxHealth), 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.rotate(this.turretRotation);
+    ctx.strokeStyle = 'rgb(135, 157, 168, 1)';
+    return ctx.strokeRect(-this.radius / 4, -this.radius, this.radius / 2, this.radius * 3);
+  };
+
+  return Turret;
 
 })(Mass);
 
