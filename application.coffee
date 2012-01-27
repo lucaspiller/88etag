@@ -600,14 +600,15 @@ class Ship extends Mass
       @position = @position.plus @velocity
       @acceleration = @acceleration.times 0.8 # drag
       @rotation += @rotationalVelocity
+      @rotation = @rotation % (Math.PI * 2)
 
     @tick = @universe.tick
 
   rotate: (dir) ->
     if (dir > 0 && @rotationalVelocity <= 0)
-      @rotationalVelocity += Math.PI / 64
+      @rotationalVelocity += (Math.PI / 64) * Math.abs(dir)
     else if (dir < 0 && @rotationalVelocity >= 0)
-      @rotationalVelocity -= Math.PI / 64
+      @rotationalVelocity -= (Math.PI / 64) * Math.abs(dir)
     else if dir == 0
       @rotationalVelocity = 0
     @universe.update this
