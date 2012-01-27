@@ -246,14 +246,43 @@ class LocalPlayer extends Player
         @ship.rotate(0)
 
 class AiPlayer extends Player
+  ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
+  FIRE_ANGLE_DIFF_MAX = Math.PI / 8
+  FIRE_MAX_DISTANCE = 1000
+
   local: true
 
   constructor: (options) ->
+    @players = options.universe.players
+    @angle = 0
+    @fire = false
+    @_chooseTarget()
+    setInterval () =>
+      @aiStep()
+    , 100
     super options
 
+  _chooseTarget: ->
+    for id, player of @players.items
+      if player != this
+        @target = player.ship
+        break
+
   step: ->
-    @ship.rotate(-1)
+    if Math.abs(@ship.rotation - @angle) > ROTATE_ANGLE_DIFF_MAX
+      if @ship.rotation > @angle
+        @ship.rotate(-1)
+      else if @ship.rotation < @angle
+        @ship.rotate(1)
+    else
+      @ship.rotate(0)
     @ship.forward()
+    @ship.fire() if @fire
+
+  aiStep: ->
+    vector = @target.position.minus(@ship.position)
+    @angle = Math.atan2(vector.y, vector.x)
+    @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
 
 class Star
   STAR_RADIUS: 1.5
@@ -383,6 +412,9 @@ class Mass
 
   remove: ->
     @universe.remove this
+
+  alive: ->
+     @health > 0
 
   overlaps: (other) ->
     return false unless other != this
