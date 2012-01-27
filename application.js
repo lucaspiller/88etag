@@ -392,8 +392,6 @@ AiPlayer = (function(_super) {
     var _this = this;
     this.players = options.universe.players;
     this.angle = 0;
-    this.fire = false;
-    this._chooseTarget();
     setInterval(function() {
       return _this.aiStep();
     }, 100);
@@ -432,9 +430,14 @@ AiPlayer = (function(_super) {
 
   AiPlayer.prototype.aiStep = function() {
     var vector;
-    vector = this.target.position.minus(this.ship.position);
-    this.angle = Math.atan2(vector.y, vector.x);
-    return this.fire = Math.abs(this.ship.rotation - this.angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE;
+    if (this.target && this.target.alive()) {
+      vector = this.target.position.minus(this.ship.position);
+      this.angle = Math.atan2(vector.y, vector.x);
+      return this.fire = Math.abs(this.ship.rotation - this.angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE;
+    } else {
+      this.fire = false;
+      return this._chooseTarget();
+    }
   };
 
   return AiPlayer;

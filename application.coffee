@@ -255,8 +255,6 @@ class AiPlayer extends Player
   constructor: (options) ->
     @players = options.universe.players
     @angle = 0
-    @fire = false
-    @_chooseTarget()
     setInterval () =>
       @aiStep()
     , 100
@@ -280,9 +278,13 @@ class AiPlayer extends Player
     @ship.fire() if @fire
 
   aiStep: ->
-    vector = @target.position.minus(@ship.position)
-    @angle = Math.atan2(vector.y, vector.x)
-    @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
+    if @target && @target.alive()
+      vector = @target.position.minus(@ship.position)
+      @angle = Math.atan2(vector.y, vector.x)
+      @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
+    else
+      @fire = false
+      @_chooseTarget()
 
 class Star
   STAR_RADIUS: 1.5
