@@ -291,6 +291,9 @@ PlayerStorage = (function() {
 })();
 
 Player = (function() {
+  var RESPAWN_DELAY;
+
+  RESPAWN_DELAY = 2500;
 
   Player.prototype.local = false;
 
@@ -322,6 +325,13 @@ Player = (function() {
       player: this
     });
     return this.universe.add(this.ship);
+  };
+
+  Player.prototype.respawn = function() {
+    var _this = this;
+    return setTimeout(function() {
+      return _this.buildShip();
+    }, RESPAWN_DELAY);
   };
 
   Player.prototype.step = function() {
@@ -924,7 +934,7 @@ Ship = (function(_super) {
 
   Ship.prototype.explode = function() {
     Ship.__super__.explode.apply(this, arguments);
-    if (this.player.local) return this.player.buildShip;
+    if (this.player.local) return this.player.respawn();
   };
 
   return Ship;

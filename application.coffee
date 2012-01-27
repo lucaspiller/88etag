@@ -189,6 +189,8 @@ class PlayerStorage
     player.step() for id, player of @items
 
 class Player
+  RESPAWN_DELAY = 2500
+
   local: false
 
   constructor: (options) ->
@@ -217,6 +219,11 @@ class Player
       player: this
     }
     @universe.add @ship
+
+  respawn: ->
+    setTimeout () =>
+      @buildShip()
+    , RESPAWN_DELAY
 
   step: ->
     true
@@ -650,7 +657,7 @@ class Ship extends Mass
   explode: ->
     super
     if @player.local
-      @player.buildShip
+      @player.respawn()
 Gt.Ship = Ship
 
 class CommandCentre extends Mass
