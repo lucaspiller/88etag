@@ -229,10 +229,11 @@ class Player
   respawn: ->
     setTimeout () =>
       @buildShip()
-      @universe.respawnGraphics = true
-      setTimeout () =>
-        @universe.respawnGraphics = false
-      , RESPAWN_DELAY / 2
+      if @universe.player == this
+        @universe.respawnGraphics = true
+        setTimeout () =>
+          @universe.respawnGraphics = false
+        , RESPAWN_DELAY / 2
     , RESPAWN_DELAY
 
   step: ->

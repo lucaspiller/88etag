@@ -1,4 +1,4 @@
-var AiPlayer, Bullet, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Turret, Universe, Vector, Viewpoint, WeaponsFire,
+var AiPlayer, Bullet, BulletTrail, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Turret, TurretBullet, Universe, Vector, Viewpoint, WeaponsFire,
   __hasProp = Object.prototype.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -338,10 +338,12 @@ Player = (function() {
     var _this = this;
     return setTimeout(function() {
       _this.buildShip();
-      _this.universe.respawnGraphics = true;
-      return setTimeout(function() {
-        return _this.universe.respawnGraphics = false;
-      }, RESPAWN_DELAY / 2);
+      if (_this.universe.player === _this) {
+        _this.universe.respawnGraphics = true;
+        return setTimeout(function() {
+          return _this.universe.respawnGraphics = false;
+        }, RESPAWN_DELAY / 2);
+      }
     }, RESPAWN_DELAY);
   };
 
