@@ -1032,8 +1032,15 @@ CommandCentre = (function(_super) {
 })(Mass);
 
 Turret = (function(_super) {
+  var FIRING_DISTANCE, ROTATE_ANGLE_DIFF_MAX, TARGETTING_DISTANCE;
 
   __extends(Turret, _super);
+
+  TARGETTING_DISTANCE = 1500;
+
+  ROTATE_ANGLE_DIFF_MAX = Math.PI / 32;
+
+  FIRING_DISTANCE = 500;
 
   Turret.prototype.type = 'Turret';
 
@@ -1042,23 +1049,86 @@ Turret = (function(_super) {
   Turret.prototype.maxHealth = 1000;
 
   function Turret(options) {
+    var _this = this;
     options || (options = {});
     options.radius || (options.radius = 15);
     options.layer = 1;
-    this.turretRotation = 0;
     Turret.__super__.constructor.call(this, options);
+    this.bulletDelay = 0;
+    this.rotation = Math.random(Math.PI * 2);
+    setInterval(function() {
+      return _this._findTarget();
+    }, 2500);
+    setInterval(function() {
+      return _this._updateTargetting();
+    }, 100);
   }
 
   Turret.prototype.step = function() {
     var dt;
     dt = this.universe.tick - this.tick;
     this.lifetime += dt;
-    this.turretRotation += Math.PI / 512;
+    if (this.player.local) {
+      this.bulletDelay -= dt;
+      if (this.target) {
+        if (Math.abs(this.rotation - this.angle) > ROTATE_ANGLE_DIFF_MAX) {
+          if (this.rotation > this.angle) {
+            this.rotation -= Math.PI / 128;
+          } else if (this.rotation < this.angle) {
+            this.rotation += Math.PI / 128;
+          }
+          if (this.shouldFire) this.fire();
+        }
+      }
+    }
     return Turret.__super__.step.apply(this, arguments);
+  };
+
+  Turret.prototype.fire = function() {
+    if (this.bulletDelay <= 0) {
+      this.universe.add(new Bullet({
+        parent: this
+      }));
+      return this.bulletDelay = 50;
+    }
+  };
+
+  Turret.prototype._findTarget = function() {
+    var id, mass, vector, _ref, _results;
+    this.target = false;
+    _ref = this.universe.masses.items;
+    _results = [];
+    for (id in _ref) {
+      mass = _ref[id];
+      if (mass.player && mass.player !== this.player) {
+        vector = mass.position.minus(this.position);
+        if (vector.length() < TARGETTING_DISTANCE) {
+          this.target = mass;
+          break;
+        } else {
+          _results.push(void 0);
+        }
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
+
+  Turret.prototype._updateTargetting = function() {
+    var vector;
+    if (this.target) {
+      vector = this.target.position.minus(this.position);
+      this.angle = Math.atan2(vector.y, vector.x);
+      return this.shouldFire = vector.length() < FIRING_DISTANCE;
+    } else {
+      return this.shouldFire = false;
+    }
   };
 
   Turret.prototype._render = function(ctx) {
     var size;
+    ctx.rotate(-this.rotation);
     ctx.lineWidth = 3;
     ctx.strokeStyle = 'rgb(195, 231, 247)';
     size = this.radius * 1.3;
@@ -1079,13 +1149,13 @@ Turret = (function(_super) {
     ctx.arc(0, 0, 0.9 * (this.radius / 2) * (this.health / this.maxHealth), 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.fill();
+    ctx.rotate(this.rotation);
     ctx.beginPath();
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.stroke();
-    ctx.rotate(this.turretRotation);
     ctx.strokeStyle = 'rgb(135, 157, 168, 1)';
-    return ctx.strokeRect(-this.radius / 4, -this.radius, this.radius / 2, this.radius * 3);
+    return ctx.strokeRect(-this.radius, -this.radius / 4, this.radius * 3, this.radius / 2);
   };
 
   return Turret;

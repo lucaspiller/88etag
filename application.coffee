@@ -736,6 +736,10 @@ class CommandCentre extends Mass
     ctx.fill()
 
 class Turret extends Mass
+  TARGETTING_DISTANCE = 1500
+  ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
+  FIRING_DISTANCE = 500
+
   type: 'Turret'
   mass: 5000
   maxHealth: 1000
@@ -744,17 +748,60 @@ class Turret extends Mass
     options ||= {}
     options.radius ||= 15
     options.layer = 1
-    @turretRotation = 0
     super options
+
+    @bulletDelay = 0
+    @rotation = Math.random(Math.PI * 2)
+    setInterval () =>
+      @_findTarget()
+    , 2500
+
+    setInterval () =>
+      @_updateTargetting()
+    , 100
 
   step: ->
     dt = @universe.tick - @tick
     @lifetime += dt
-    @turretRotation += Math.PI / 512
+
+    if @player.local
+      @bulletDelay -= dt
+
+      if @target
+        if Math.abs(@rotation - @angle) > ROTATE_ANGLE_DIFF_MAX
+          if @rotation > @angle
+            @rotation -= Math.PI / 128
+          else if @rotation < @angle
+            @rotation += Math.PI / 128
+          @fire() if @shouldFire
+
     super
+
+  fire: ->
+    if @bulletDelay <= 0
+      @universe.add new Bullet { parent: this }
+      @bulletDelay = 50
+
+  _findTarget: ->
+    @target = false
+    for id, mass of @universe.masses.items
+      if mass.player && mass.player != @player
+        vector = mass.position.minus(@position)
+        if vector.length() < TARGETTING_DISTANCE
+          @target = mass
+          break
+
+  _updateTargetting: ->
+    if @target
+      vector = @target.position.minus(@position)
+      @angle = Math.atan2(vector.y, vector.x)
+      @shouldFire = vector.length() < FIRING_DISTANCE
+    else
+      @shouldFire = false
 
   _render: (ctx) ->
     # base box
+    ctx.rotate -@rotation
     ctx.lineWidth = 3
     ctx.strokeStyle = 'rgb(195, 231, 247)'
     size = @radius * 1.3; ctx.strokeRect -size, -size, size * 2, size * 2
@@ -776,14 +823,14 @@ class Turret extends Mass
     ctx.fill()
 
     # turret
+    ctx.rotate @rotation
     ctx.beginPath()
     ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
     ctx.closePath()
     ctx.stroke()
 
-    ctx.rotate @turretRotation
     ctx.strokeStyle = 'rgb(135, 157, 168, 1)'
-    ctx.strokeRect -@radius / 4, -@radius, @radius / 2, @radius * 3
+    ctx.strokeRect -@radius, -@radius / 4, @radius * 3, @radius / 2
 
 class Viewpoint
   BUFFER: 40
