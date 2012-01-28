@@ -262,6 +262,9 @@ class LocalPlayer extends Player
           when 81 # q
             @buildTurret()
             @universe.keys = _.without @universe.keys, 81 # TODO hack
+          when 87 # w
+            @buildMassDriver()
+            @universe.keys = _.without @universe.keys, 87 # TODO hack
           else
             console.log 'Key down', key
 
@@ -274,6 +277,13 @@ class LocalPlayer extends Player
       player: this
     }
     @universe.add turret
+
+  buildMassDriver: ->
+    massDriver = new MassDriver {
+      position: @ship.position,
+      player: this
+    }
+    @universe.add massDriver
 
 class AiPlayer extends Player
   ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
@@ -869,6 +879,88 @@ class BulletTrail extends Mass
     ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'
     ctx.beginPath()
     ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+class MassDriver extends Mass
+  TARGETTING_DISTANCE = 1500
+  FIRING_DISTANCE = 350
+
+  type: 'MassDriver'
+  mass: 5000
+  maxHealth: 10000
+
+  constructor: (options) ->
+    options ||= {}
+    options.radius ||= 35
+    options.layer = 1
+    super options
+
+    setInterval () =>
+      @_findTarget()
+    , 2500
+
+    setInterval () =>
+      @_updateTargetting()
+    , 100
+
+  step: ->
+    dt = @universe.tick - @tick
+    @lifetime += dt
+    super
+
+  _findTarget: ->
+    @target = false
+    closeObjects = _.filter @universe.masses.items, (mass, id) =>
+      if mass.player && mass.player != @player
+        mass.position.minus(@position).length() < TARGETTING_DISTANCE
+    if closeObjects.length > 0
+      @target = closeObjects[Math.ceil(Math.random(closeObjects.length)) - 1]
+
+  _updateTargetting: ->
+    if @target
+      @vector = @target.position.minus(@position)
+      @shouldFire = @vector.length() < FIRING_DISTANCE
+      if @shouldFire
+        @target.velocity = @target.velocity.plus @vector.times(10)
+      else
+        @target = false
+    else
+      @shouldFire = false
+
+  _render: (ctx) ->
+    # base
+    ctx.fillStyle = 'rgb(122, 77, 29)'
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = 'rgb(42, 28, 16)'
+    ctx.beginPath()
+    ctx.arc 0, 0, (@radius / 3) * 2, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    # targetting line
+    if @shouldFire
+      ctx.strokeStyle = 'rgb(42, 28, 16)'
+      ctx.beginPath()
+      ctx.moveTo 0, 0
+      ctx.lineTo @vector.x, @vector.y
+      ctx.closePath()
+      ctx.stroke()
+
+    # health bar
+    ctx.fillStyle = 'rgb(0, 25, 0)'
+    ctx.beginPath()
+    ctx.arc 0, 0, 10, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = 'rgb(0,68,0)'
+    ctx.beginPath()
+    ctx.arc 0, 0, 0.9 * 10 * (@health / @maxHealth), 0, Math.PI * 2, true
     ctx.closePath()
     ctx.fill()
 

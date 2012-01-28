@@ -1,4 +1,4 @@
-var AiPlayer, Bullet, BulletTrail, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Turret, TurretBullet, Universe, Vector, Viewpoint, WeaponsFire,
+var AiPlayer, Bullet, BulletTrail, CommandCentre, Controller, Gt, LocalPlayer, Mass, MassDriver, MassStorage, Player, PlayerStorage, Ship, ShipTrail, Star, Starfield, Turret, TurretBullet, Universe, Vector, Viewpoint, WeaponsFire,
   __hasProp = Object.prototype.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -391,6 +391,10 @@ LocalPlayer = (function(_super) {
             this.buildTurret();
             this.universe.keys = _.without(this.universe.keys, 81);
             break;
+          case 87:
+            this.buildMassDriver();
+            this.universe.keys = _.without(this.universe.keys, 87);
+            break;
           default:
             console.log('Key down', key);
         }
@@ -408,6 +412,15 @@ LocalPlayer = (function(_super) {
       player: this
     });
     return this.universe.add(turret);
+  };
+
+  LocalPlayer.prototype.buildMassDriver = function() {
+    var massDriver;
+    massDriver = new MassDriver({
+      position: this.ship.position,
+      player: this
+    });
+    return this.universe.add(massDriver);
   };
 
   return LocalPlayer;
@@ -1217,6 +1230,105 @@ BulletTrail = (function(_super) {
   };
 
   return BulletTrail;
+
+})(Mass);
+
+MassDriver = (function(_super) {
+  var FIRING_DISTANCE, TARGETTING_DISTANCE;
+
+  __extends(MassDriver, _super);
+
+  TARGETTING_DISTANCE = 1500;
+
+  FIRING_DISTANCE = 350;
+
+  MassDriver.prototype.type = 'MassDriver';
+
+  MassDriver.prototype.mass = 5000;
+
+  MassDriver.prototype.maxHealth = 10000;
+
+  function MassDriver(options) {
+    var _this = this;
+    options || (options = {});
+    options.radius || (options.radius = 35);
+    options.layer = 1;
+    MassDriver.__super__.constructor.call(this, options);
+    setInterval(function() {
+      return _this._findTarget();
+    }, 2500);
+    setInterval(function() {
+      return _this._updateTargetting();
+    }, 100);
+  }
+
+  MassDriver.prototype.step = function() {
+    var dt;
+    dt = this.universe.tick - this.tick;
+    this.lifetime += dt;
+    return MassDriver.__super__.step.apply(this, arguments);
+  };
+
+  MassDriver.prototype._findTarget = function() {
+    var closeObjects,
+      _this = this;
+    this.target = false;
+    closeObjects = _.filter(this.universe.masses.items, function(mass, id) {
+      if (mass.player && mass.player !== _this.player) {
+        return mass.position.minus(_this.position).length() < TARGETTING_DISTANCE;
+      }
+    });
+    if (closeObjects.length > 0) {
+      return this.target = closeObjects[Math.ceil(Math.random(closeObjects.length)) - 1];
+    }
+  };
+
+  MassDriver.prototype._updateTargetting = function() {
+    if (this.target) {
+      this.vector = this.target.position.minus(this.position);
+      this.shouldFire = this.vector.length() < FIRING_DISTANCE;
+      if (this.shouldFire) {
+        return this.target.velocity = this.target.velocity.plus(this.vector.times(10));
+      } else {
+        return this.target = false;
+      }
+    } else {
+      return this.shouldFire = false;
+    }
+  };
+
+  MassDriver.prototype._render = function(ctx) {
+    ctx.fillStyle = 'rgb(122, 77, 29)';
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgb(42, 28, 16)';
+    ctx.beginPath();
+    ctx.arc(0, 0, (this.radius / 3) * 2, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    if (this.shouldFire) {
+      ctx.strokeStyle = 'rgb(42, 28, 16)';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(this.vector.x, this.vector.y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgb(0, 25, 0)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgb(0,68,0)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 0.9 * 10 * (this.health / this.maxHealth), 0, Math.PI * 2, true);
+    ctx.closePath();
+    return ctx.fill();
+  };
+
+  return MassDriver;
 
 })(Mass);
 
