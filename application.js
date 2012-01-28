@@ -1083,8 +1083,8 @@ Turret = (function(_super) {
           } else if (this.rotation < this.angle) {
             this.rotation += Math.PI / 128;
           }
-          if (this.shouldFire) this.fire();
         }
+        if (this.shouldFire) this.fire();
       }
     }
     return Turret.__super__.step.apply(this, arguments);
@@ -1100,25 +1100,17 @@ Turret = (function(_super) {
   };
 
   Turret.prototype._findTarget = function() {
-    var id, mass, vector, _ref, _results;
+    var closeObjects,
+      _this = this;
     this.target = false;
-    _ref = this.universe.masses.items;
-    _results = [];
-    for (id in _ref) {
-      mass = _ref[id];
-      if (mass.player && mass.player !== this.player) {
-        vector = mass.position.minus(this.position);
-        if (vector.length() < TARGETTING_DISTANCE) {
-          this.target = mass;
-          break;
-        } else {
-          _results.push(void 0);
-        }
-      } else {
-        _results.push(void 0);
+    closeObjects = _.filter(this.universe.masses.items, function(mass, id) {
+      if (mass.player && mass.player !== _this.player) {
+        return mass.position.minus(_this.position).length() < TARGETTING_DISTANCE;
       }
+    });
+    if (closeObjects.length > 0) {
+      return this.target = closeObjects[Math.ceil(Math.random(closeObjects.length)) - 1];
     }
-    return _results;
   };
 
   Turret.prototype._updateTargetting = function() {

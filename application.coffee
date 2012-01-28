@@ -778,7 +778,7 @@ class Turret extends Mass
             @rotation -= Math.PI / 128
           else if @rotation < @angle
             @rotation += Math.PI / 128
-          @fire() if @shouldFire
+        @fire() if @shouldFire
 
     super
 
@@ -789,12 +789,11 @@ class Turret extends Mass
 
   _findTarget: ->
     @target = false
-    for id, mass of @universe.masses.items
+    closeObjects = _.filter @universe.masses.items, (mass, id) =>
       if mass.player && mass.player != @player
-        vector = mass.position.minus(@position)
-        if vector.length() < TARGETTING_DISTANCE
-          @target = mass
-          break
+        mass.position.minus(@position).length() < TARGETTING_DISTANCE
+    if closeObjects.length > 0
+      @target = closeObjects[Math.ceil(Math.random(closeObjects.length)) - 1]
 
   _updateTargetting: ->
     if @target
