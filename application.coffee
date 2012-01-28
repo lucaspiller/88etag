@@ -574,6 +574,7 @@ class Bullet extends WeaponsFire
     options.lifetime = 100
     super options
     @velocity = new Vector(@parent.rotation).times(6)
+    @rotation = @parent.rotation
 
   _render: (ctx) ->
     ctx.fillStyle = 'rgb(89,163,89)'
@@ -782,7 +783,7 @@ class Turret extends Mass
 
   fire: ->
     if @bulletDelay <= 0
-      @universe.add new Bullet { parent: this }
+      @universe.add new TurretBullet { parent: this }
       @bulletDelay = 50
 
   _findTarget: ->
@@ -832,8 +833,44 @@ class Turret extends Mass
     ctx.closePath()
     ctx.stroke()
 
-    ctx.strokeStyle = 'rgb(135, 157, 168, 1)'
+    ctx.strokeStyle = 'rgb(135, 157, 168)'
     ctx.strokeRect -@radius, -@radius / 4, @radius * 3, @radius / 2
+
+class TurretBullet extends Bullet
+  type: 'TurretBullet'
+
+  step: ->
+    @universe.add new BulletTrail { parent: this }
+    super
+
+  _render: (ctx) ->
+    ctx.fillStyle = 'rgb(2, 162, 62)'
+    ctx.fillRect -@radius * 2, -@radius / 4, @radius * 2, @radius / 2
+
+    ctx.rotate -Math.PI / 16
+    ctx.fillRect -@radius * 2, -@radius / 4, @radius * 2, @radius / 2
+
+    ctx.rotate (Math.PI / 16) * 2
+    ctx.fillRect -@radius * 2, -@radius / 4, @radius * 2, @radius / 2
+
+class BulletTrail extends Mass
+  type: 'BulletTrail'
+  solid: false
+
+  constructor: (options) ->
+    options.radius ||= 2
+    options.position ||= options.parent.position
+    options.velocity ||= new Vector (Math.random() - 0.5) / 2, (Math.random() - 0.5) / 2
+    options.lifetime = 5
+    super options
+
+  _render: (ctx) ->
+    alpha = @lifetime / 10
+    ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'
+    ctx.beginPath()
+    ctx.arc 0, 0, @radius, 0, Math.PI * 2, true
+    ctx.closePath()
+    ctx.fill()
 
 class Viewpoint
   BUFFER: 40

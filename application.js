@@ -829,6 +829,7 @@ Bullet = (function(_super) {
     options.lifetime = 100;
     Bullet.__super__.constructor.call(this, options);
     this.velocity = new Vector(this.parent.rotation).times(6);
+    this.rotation = this.parent.rotation;
   }
 
   Bullet.prototype._render = function(ctx) {
@@ -1089,7 +1090,7 @@ Turret = (function(_super) {
 
   Turret.prototype.fire = function() {
     if (this.bulletDelay <= 0) {
-      this.universe.add(new Bullet({
+      this.universe.add(new TurretBullet({
         parent: this
       }));
       return this.bulletDelay = 50;
@@ -1157,11 +1158,71 @@ Turret = (function(_super) {
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.stroke();
-    ctx.strokeStyle = 'rgb(135, 157, 168, 1)';
+    ctx.strokeStyle = 'rgb(135, 157, 168)';
     return ctx.strokeRect(-this.radius, -this.radius / 4, this.radius * 3, this.radius / 2);
   };
 
   return Turret;
+
+})(Mass);
+
+TurretBullet = (function(_super) {
+
+  __extends(TurretBullet, _super);
+
+  function TurretBullet() {
+    TurretBullet.__super__.constructor.apply(this, arguments);
+  }
+
+  TurretBullet.prototype.type = 'TurretBullet';
+
+  TurretBullet.prototype.step = function() {
+    this.universe.add(new BulletTrail({
+      parent: this
+    }));
+    return TurretBullet.__super__.step.apply(this, arguments);
+  };
+
+  TurretBullet.prototype._render = function(ctx) {
+    ctx.fillStyle = 'rgb(2, 162, 62)';
+    ctx.fillRect(-this.radius * 2, -this.radius / 4, this.radius * 2, this.radius / 2);
+    ctx.rotate(-Math.PI / 16);
+    ctx.fillRect(-this.radius * 2, -this.radius / 4, this.radius * 2, this.radius / 2);
+    ctx.rotate((Math.PI / 16) * 2);
+    return ctx.fillRect(-this.radius * 2, -this.radius / 4, this.radius * 2, this.radius / 2);
+  };
+
+  return TurretBullet;
+
+})(Bullet);
+
+BulletTrail = (function(_super) {
+
+  __extends(BulletTrail, _super);
+
+  BulletTrail.prototype.type = 'BulletTrail';
+
+  BulletTrail.prototype.solid = false;
+
+  function BulletTrail(options) {
+    options.radius || (options.radius = 2);
+    options.position || (options.position = options.parent.position);
+    options.velocity || (options.velocity = new Vector((Math.random() - 0.5) / 2, (Math.random() - 0.5) / 2));
+    options.lifetime = 5;
+    BulletTrail.__super__.constructor.call(this, options);
+  }
+
+  BulletTrail.prototype._render = function(ctx) {
+    var alpha;
+    alpha = this.lifetime / 10;
+    ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+    ctx.closePath();
+    return ctx.fill();
+  };
+
+  return BulletTrail;
 
 })(Mass);
 
