@@ -496,6 +496,9 @@ class Mass
 
     for t in [0...dt]
       @velocity = @velocity.plus @acceleration
+      # magical force to stop large objects
+      if @acceleration.length() == 0 && @mass >= 1000
+        @velocity = @velocity.times 0.99
       @position = @position.plus @velocity
       @acceleration = @acceleration.times 0.8 # drag
       @rotation += @rotationalVelocity
@@ -741,7 +744,7 @@ class Turret extends Mass
   FIRING_DISTANCE = 500
 
   type: 'Turret'
-  mass: 5000
+  mass: 1000
   maxHealth: 1000
 
   constructor: (options) ->

@@ -720,6 +720,9 @@ Mass = (function() {
     if ((this.lifetime -= dt) < 0) return this.remove();
     for (t = 0; 0 <= dt ? t < dt : t > dt; 0 <= dt ? t++ : t--) {
       this.velocity = this.velocity.plus(this.acceleration);
+      if (this.acceleration.length() === 0 && this.mass >= 1000) {
+        this.velocity = this.velocity.times(0.99);
+      }
       this.position = this.position.plus(this.velocity);
       this.acceleration = this.acceleration.times(0.8);
       this.rotation += this.rotationalVelocity;
@@ -1044,7 +1047,7 @@ Turret = (function(_super) {
 
   Turret.prototype.type = 'Turret';
 
-  Turret.prototype.mass = 5000;
+  Turret.prototype.mass = 1000;
 
   Turret.prototype.maxHealth = 1000;
 
