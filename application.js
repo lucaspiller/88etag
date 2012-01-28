@@ -14,8 +14,13 @@ Controller = (function() {
   }
 
   Controller.prototype.setupCanvas = function() {
-    var _ref;
-    return _ref = [$(window).width() - 50, $(window).height() - 50], this.canvas.width = _ref[0], this.canvas.height = _ref[1], _ref;
+    var _ref,
+      _this = this;
+    _ref = [$(window).width(), $(window).height()], this.canvas.width = _ref[0], this.canvas.height = _ref[1];
+    return $(window).resize(function() {
+      var _ref2;
+      return _ref2 = [$(window).width(), $(window).height()], _this.canvas.width = _ref2[0], _this.canvas.height = _ref2[1], _ref2;
+    });
   };
 
   Controller.prototype.setupInput = function() {
@@ -1337,9 +1342,14 @@ Viewpoint = (function() {
   Viewpoint.prototype.BUFFER = 40;
 
   function Viewpoint(canvas) {
-    var _ref;
+    var _ref,
+      _this = this;
     this.position = new Vector(0, 0);
     _ref = [canvas.width, canvas.height], this.width = _ref[0], this.height = _ref[1];
+    $(window).resize(function() {
+      var _ref2;
+      return _ref2 = [canvas.width, canvas.height], _this.width = _ref2[0], _this.height = _ref2[1], _ref2;
+    });
   }
 
   Viewpoint.prototype.update = function(ship) {

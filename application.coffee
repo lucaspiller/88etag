@@ -8,7 +8,9 @@ class Controller
     @start()
 
   setupCanvas: ->
-    [@canvas.width, @canvas.height] = [$(window).width() - 50, $(window).height() - 50]
+    [@canvas.width, @canvas.height] = [$(window).width(), $(window).height()]
+    $(window).resize () =>
+      [@canvas.width, @canvas.height] = [$(window).width(), $(window).height()]
 
   setupInput: ->
     @setupKeys()
@@ -970,6 +972,8 @@ class Viewpoint
   constructor: (canvas) ->
     @position = new Vector 0, 0
     [@width, @height] = [canvas.width, canvas.height]
+    $(window).resize () =>
+      [@width, @height] = [canvas.width, canvas.height]
 
   update: (ship) ->
     # focus on centre of ship
