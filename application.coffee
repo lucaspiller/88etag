@@ -481,11 +481,11 @@ class Mass
     v2y = v2.minus(v2x)
     m2 = other.mass
 
-    @velocity = v1x.times((m1 - m2) / (m1 + m2)).plus(v2x.times((2 * m2) / (m1 + m2)).plus(v1y))
+    @velocity = v1x.times((m1 - m2) / (m1 + m2)).plus(v2x.times((2 * m2) / (m1 + m2)).plus(v1y)).times(0.75)
     @velocity._zeroSmall()
     @acceleration = new Vector 0, 0
 
-    other.velocity = v1x.times((2 * m1) / (m1 + m2)).plus(v2x.times((m2 - m1) / (m1 + m2)).plus(v2y))
+    other.velocity = v1x.times((2 * m1) / (m1 + m2)).plus(v2x.times((m2 - m1) / (m1 + m2)).plus(v2y)).times(0.75)
     other.velocity._zeroSmall()
     other.acceleration = new Vector 0, 0
 
