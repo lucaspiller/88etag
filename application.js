@@ -53,7 +53,7 @@ Gt.Controller = Controller;
 Universe = (function() {
   var LOOP_TARGET;
 
-  LOOP_TARGET = 1000 / 24;
+  LOOP_TARGET = 1000 / 60;
 
   function Universe(options) {
     this.canvas = options != null ? options.canvas : void 0;

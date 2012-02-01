@@ -28,7 +28,7 @@ class Controller
 Gt.Controller = Controller
 
 class Universe
-  LOOP_TARGET = 1000/24
+  LOOP_TARGET = 1000/60
 
   constructor: (options) ->
     @canvas = options?.canvas
