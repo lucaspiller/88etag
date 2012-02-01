@@ -397,9 +397,6 @@ LocalPlayer = (function(_super) {
           case 87:
             this.buildMassDriver();
             this.universe.keys = _.without(this.universe.keys, 87);
-            break;
-          default:
-            console.log('Key down', key);
         }
       }
       if (!_.include(this.universe.keys, 37) && !_.include(this.universe.keys, 39)) {

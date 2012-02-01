@@ -264,8 +264,6 @@ class LocalPlayer extends Player
           when 87 # w
             @buildMassDriver()
             @universe.keys = _.without @universe.keys, 87 # TODO hack
-          else
-            console.log 'Key down', key
 
       if !_.include(@universe.keys, 37) and !_.include(@universe.keys, 39)
         @ship.rotate(0)
