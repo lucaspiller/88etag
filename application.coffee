@@ -766,17 +766,23 @@ class Turret extends Mass
 
     @bulletDelay = 0
     @rotation = Math.random(Math.PI * 2)
-    setInterval () =>
-      @_findTarget()
-    , 2500
 
-    setInterval () =>
-      @_updateTargetting()
-    , 100
+    @lastFindTargetLoop = 0
+    @lastTargettingLoop = 0
 
   step: ->
     dt = @universe.tick - @tick
     @lifetime += dt
+
+    @lastFindTargetLoop++
+    if @lastFindTargetLoop > 125
+      @_findTarget()
+      @lastFindTargetLoop = 0
+
+    @lastTargettingLoop++
+    if @lastFindTargetLoop > 5
+      @_updateTargetting()
+      @lastTargettingLoop = 0
 
     if @player.local
       @bulletDelay -= dt
@@ -895,17 +901,22 @@ class MassDriver extends Mass
     options.layer = 1
     super options
 
-    setInterval () =>
-      @_findTarget()
-    , 2500
-
-    setInterval () =>
-      @_updateTargetting()
-    , 100
+    @lastFindTargetLoop = 0
+    @lastTargettingLoop = 0
 
   step: ->
     dt = @universe.tick - @tick
     @lifetime += dt
+
+    @lastFindTargetLoop++
+    if @lastFindTargetLoop > 125
+      @_findTarget()
+      @lastFindTargetLoop = 0
+
+    @lastTargettingLoop++
+    if @lastFindTargetLoop > 5
+      @_updateTargetting()
+      @lastTargettingLoop = 0
     super
 
   _findTarget: ->

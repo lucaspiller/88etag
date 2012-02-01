@@ -1071,25 +1071,30 @@ Turret = (function(_super) {
   Turret.prototype.maxHealth = 1000;
 
   function Turret(options) {
-    var _this = this;
     options || (options = {});
     options.radius || (options.radius = 15);
     options.layer = 1;
     Turret.__super__.constructor.call(this, options);
     this.bulletDelay = 0;
     this.rotation = Math.random(Math.PI * 2);
-    setInterval(function() {
-      return _this._findTarget();
-    }, 2500);
-    setInterval(function() {
-      return _this._updateTargetting();
-    }, 100);
+    this.lastFindTargetLoop = 0;
+    this.lastTargettingLoop = 0;
   }
 
   Turret.prototype.step = function() {
     var dt;
     dt = this.universe.tick - this.tick;
     this.lifetime += dt;
+    this.lastFindTargetLoop++;
+    if (this.lastFindTargetLoop > 125) {
+      this._findTarget();
+      this.lastFindTargetLoop = 0;
+    }
+    this.lastTargettingLoop++;
+    if (this.lastFindTargetLoop > 5) {
+      this._updateTargetting();
+      this.lastTargettingLoop = 0;
+    }
     if (this.player.local) {
       this.bulletDelay -= dt;
       if (this.target) {
@@ -1252,23 +1257,28 @@ MassDriver = (function(_super) {
   MassDriver.prototype.maxHealth = 10000;
 
   function MassDriver(options) {
-    var _this = this;
     options || (options = {});
     options.radius || (options.radius = 35);
     options.layer = 1;
     MassDriver.__super__.constructor.call(this, options);
-    setInterval(function() {
-      return _this._findTarget();
-    }, 2500);
-    setInterval(function() {
-      return _this._updateTargetting();
-    }, 100);
+    this.lastFindTargetLoop = 0;
+    this.lastTargettingLoop = 0;
   }
 
   MassDriver.prototype.step = function() {
     var dt;
     dt = this.universe.tick - this.tick;
     this.lifetime += dt;
+    this.lastFindTargetLoop++;
+    if (this.lastFindTargetLoop > 125) {
+      this._findTarget();
+      this.lastFindTargetLoop = 0;
+    }
+    this.lastTargettingLoop++;
+    if (this.lastFindTargetLoop > 5) {
+      this._updateTargetting();
+      this.lastTargettingLoop = 0;
+    }
     return MassDriver.__super__.step.apply(this, arguments);
   };
 
