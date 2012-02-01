@@ -11,6 +11,8 @@ A demo is availabe on the [GitHub pages](http://lucaspiller.github.com/88etag/) 
     Q      - Construct turret
     W      - Construct mass driver
 
+There is currently no scoring or end of game, however technically once your control centre has been destroyed the game is over.
+
 ## Get Involved
 
 The game is still under early (active) development, if you would like to get involved it is probably best to PM me so we don't both work on the same thing.
