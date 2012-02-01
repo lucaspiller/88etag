@@ -4,7 +4,12 @@
 
 ## Play now!
 
-Coming soon, feel free to add this to the readme :)
+A demo is availabe on the [GitHub pages](http://lucaspiller.github.com/88etag/) for this project, controls are:
+
+    Arrows - Move ship
+    D      - Fire
+    Q      - Construct turret
+    W      - Construct mass driver
 
 ## Get Involved
 
