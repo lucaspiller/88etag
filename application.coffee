@@ -42,6 +42,7 @@ class Universe
     @setupCanvas()
     @starfield.generate @viewpoint
     @buildPlayer()
+    setInterval (=> @loop()), LOOP_TARGET
     @loop()
 
   setupCanvas: ->
@@ -51,17 +52,13 @@ class Universe
     @ctx.strokeStyle = 'rgb(255, 255, 255)'
 
   loop: ->
-    start = new Date().getTime()
+    start = Date.now()
     @checkCollisions()
     @step()
     @render()
-    time = new Date().getTime() - start
-    delay = @LOOP_TARGET - time
-    if delay < 0
-      console.log 'Frame took ' + time + 'ms'
-      delay = 0
-
-    setTimeout (=> @loop()), delay
+    renderTime = Date.now() - start
+    if renderTime > LOOP_TARGET
+      console.log 'Frame took ' + renderTime + 'ms'
 
   keyDown: (key) ->
     @keys.push key

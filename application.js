@@ -65,9 +65,13 @@ Universe = (function() {
   }
 
   Universe.prototype.start = function() {
+    var _this = this;
     this.setupCanvas();
     this.starfield.generate(this.viewpoint);
     this.buildPlayer();
+    setInterval((function() {
+      return _this.loop();
+    }), LOOP_TARGET);
     return this.loop();
   };
 
@@ -79,21 +83,15 @@ Universe = (function() {
   };
 
   Universe.prototype.loop = function() {
-    var delay, start, time,
-      _this = this;
-    start = new Date().getTime();
+    var renderTime, start;
+    start = Date.now();
     this.checkCollisions();
     this.step();
     this.render();
-    time = new Date().getTime() - start;
-    delay = this.LOOP_TARGET - time;
-    if (delay < 0) {
-      console.log('Frame took ' + time + 'ms');
-      delay = 0;
+    renderTime = Date.now() - start;
+    if (renderTime > LOOP_TARGET) {
+      return console.log('Frame took ' + renderTime + 'ms');
     }
-    return setTimeout((function() {
-      return _this.loop();
-    }), delay);
   };
 
   Universe.prototype.keyDown = function(key) {
