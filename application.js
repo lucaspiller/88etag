@@ -16,10 +16,10 @@ Controller = (function() {
   Controller.prototype.setupCanvas = function() {
     var _ref,
       _this = this;
-    _ref = [$(window).width(), $(window).height()], this.canvas.width = _ref[0], this.canvas.height = _ref[1];
-    return $(window).resize(function() {
+    _ref = [$(window).width() - 5, $(window).height() - 5], this.canvas.width = _ref[0], this.canvas.height = _ref[1];
+    return $(document).resize(function() {
       var _ref2;
-      return _ref2 = [$(window).width(), $(window).height()], _this.canvas.width = _ref2[0], _this.canvas.height = _ref2[1], _ref2;
+      return _ref2 = [$(window).width() - 5, $(window).height() - 5], _this.canvas.width = _ref2[0], _this.canvas.height = _ref2[1], _ref2;
     });
   };
 

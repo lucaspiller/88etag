@@ -8,9 +8,9 @@ class Controller
     @start()
 
   setupCanvas: ->
-    [@canvas.width, @canvas.height] = [$(window).width(), $(window).height()]
-    $(window).resize () =>
-      [@canvas.width, @canvas.height] = [$(window).width(), $(window).height()]
+    [@canvas.width, @canvas.height] = [$(window).width() - 5, $(window).height() - 5]
+    $(document).resize () =>
+      [@canvas.width, @canvas.height] = [$(window).width() - 5, $(window).height() - 5]
 
   setupInput: ->
     @setupKeys()
