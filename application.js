@@ -148,7 +148,7 @@ Universe = (function() {
       player = _ref[id];
       if (player.commandCentre != null) {
         if (this.viewpoint.offscreen(player.commandCentre.position)) {
-          vector = player.commandCentre.position.minus(this.viewpoint.position);
+          vector = Vector.minus(player.commandCentre.position, this.viewpoint.position);
           if (vector.x < 0) {
             vector.x = 0;
           } else if (vector.x > this.viewpoint.width) {
@@ -318,7 +318,7 @@ Player = (function() {
     _ref3 = [(_ref = this.universe.canvas) != null ? _ref.width : void 0, (_ref2 = this.universe.canvas) != null ? _ref2.height : void 0], w = _ref3[0], h = _ref3[1];
     _ref4 = [Math.random() * w * 8, Math.random() * h * 8], x = _ref4[0], y = _ref4[1];
     this.commandCentre = new CommandCentre({
-      position: new Vector(x, y),
+      position: Vector._new(x, y),
       player: this
     });
     this.universe.add(this.commandCentre);
@@ -330,7 +330,7 @@ Player = (function() {
     x = this.commandCentre.position.x;
     y = this.commandCentre.position.y + this.commandCentre.radius;
     this.ship = new Ship({
-      position: new Vector(x, y),
+      position: Vector._new(x, y),
       rotation: Math.PI / 2,
       player: this
     });
@@ -483,9 +483,9 @@ AiPlayer = (function(_super) {
   AiPlayer.prototype.aiStep = function() {
     var vector;
     if (this.target && this.target.alive()) {
-      vector = this.target.position.minus(this.ship.position);
+      vector = Vector.minus(this.target.position, this.ship.position);
       this.angle = Math.atan2(vector.y, vector.x);
-      return this.fire = Math.abs(this.ship.rotation - this.angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE;
+      return this.fire = Math.abs(this.ship.rotation - this.angle) <= FIRE_ANGLE_DIFF_MAX && Vector._length(vector) < FIRE_MAX_DISTANCE;
     } else {
       this.fire = false;
       return this._chooseTarget();
@@ -503,13 +503,14 @@ Star = (function() {
   function Star(options) {
     this.position = options.position;
     this.alpha = options.alpha;
+    this.z = Math.random();
   }
 
   Star.prototype.render = function(ctx, viewpoint, MULT) {
     var alpha, x, y;
     ctx.save();
-    x = this.position.x - (viewpoint.position.x / (this.position.z + 1));
-    y = this.position.y - (viewpoint.position.y / (this.position.z + 1));
+    x = this.position.x - (viewpoint.position.x / (this.z + 1));
+    y = this.position.y - (viewpoint.position.y / (this.z + 1));
     x -= Math.floor(x / (viewpoint.width * MULT)) * (viewpoint.width * MULT);
     y -= Math.floor(y / (viewpoint.height * MULT)) * (viewpoint.height * MULT);
     if (y > viewpoint.height) {
@@ -518,7 +519,7 @@ Star = (function() {
       y = y + viewpoint.height;
     }
     ctx.translate(x, y);
-    alpha = (1 - this.position.z) / 2;
+    alpha = (1 - this.z) / 2;
     ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')';
     ctx.beginPath();
     ctx.arc(0, 0, this.STAR_RADIUS, 0, Math.PI * 2, true);
@@ -548,7 +549,7 @@ Starfield = (function() {
     _results = [];
     for (i = 1, _ref = this.NUM_STARS; 1 <= _ref ? i <= _ref : i >= _ref; 1 <= _ref ? i++ : i--) {
       _results.push(this.stars.push(new Star({
-        position: new Vector(Math.random() * viewpoint.width * this.MULT, Math.random() * viewpoint.height * this.MULT, Math.random())
+        position: Vector._new(Math.random() * viewpoint.width * this.MULT, Math.random() * viewpoint.height * this.MULT)
       })));
     }
     return _results;
@@ -663,9 +664,9 @@ Mass = (function() {
     o = options || {};
     this.id = Math.random(9999999999999);
     this.radius = o.radius || 1;
-    this.position = o.position || new Vector();
-    this.velocity = o.velocity || new Vector();
-    this.acceleration = o.acceleration || new Vector();
+    this.position = o.position || Vector._new(0, 0);
+    this.velocity = o.velocity || Vector._new(0, 0);
+    this.acceleration = o.acceleration || Vector._new(0, 0);
     this.rotation = o.rotation || 0;
     this.rotationalVelocity = o.rotationalVelocity || 0;
     this.player = o.player;
@@ -689,42 +690,40 @@ Mass = (function() {
   Mass.prototype.overlaps = function(other) {
     var diff;
     if (other === this) return false;
-    diff = other.position.minus(this.position).length();
+    diff = Vector._length(Vector.minus(other.position, this.position));
     return diff < (other.radius + this.radius);
   };
 
   Mass.prototype.handleCollision = function(other) {
     var m1, m2, v1, v1x, v1y, v2, v2x, v2y, x, x1, x2, _results;
     if (!(this.solid && other.solid)) return;
-    x = this.position.minus(other.position).normalized();
+    x = Vector.normalized(Vector.minus(this.position, other.position));
     v1 = this.velocity;
-    x1 = x.dotProduct(v1);
-    v1x = x.times(x1);
-    v1y = v1.minus(v1x);
+    x1 = Vector.dotProduct(x, v1);
+    v1x = Vector.times(x, x1);
+    v1y = Vector.minus(v1, v1x);
     m1 = this.mass;
-    x = x.times(-1);
+    x = Vector.times(x, -1);
     v2 = other.velocity;
-    x2 = x.dotProduct(v2);
-    v2x = x.times(x2);
-    v2y = v2.minus(v2x);
+    x2 = Vector.dotProduct(x, v2);
+    v2x = Vector.times(x, x2);
+    v2y = Vector.minus(v2, v2x);
     m2 = other.mass;
-    this.velocity = v1x.times((m1 - m2) / (m1 + m2)).plus(v2x.times((2 * m2) / (m1 + m2)).plus(v1y)).times(0.75);
-    this.velocity._zeroSmall();
-    this.acceleration = new Vector(0, 0);
-    other.velocity = v1x.times((2 * m1) / (m1 + m2)).plus(v2x.times((m2 - m1) / (m1 + m2)).plus(v2y)).times(0.75);
-    other.velocity._zeroSmall();
-    other.acceleration = new Vector(0, 0);
-    if (this.velocity.length() === 0 && other.velocity.length() === 0) {
+    this.velocity = Vector._zeroSmall(Vector.times(Vector.plus(Vector.times(v1x, (m1 - m2) / (m1 + m2)), Vector.plus(Vector.times(v2x, (2 * m2) / (m1 + m2)), v1y)), 0.75));
+    this.acceleration = Vector._new(0, 0);
+    other.velocity = Vector._zeroSmall(Vector.times(Vector.plus(Vector.times(v1x, (2 * m1) / (m1 + m2)), Vector.plus(Vector.times(v2x, (m2 - m1) / (m1 + m2)), v2y)), 0.75));
+    other.acceleration = Vector._new(0, 0);
+    if (Vector._length(this.velocity) === 0 && Vector._length(other.velocity) === 0) {
       if (m1 < m2) {
-        this.velocity = x.times(-1);
+        this.velocity = Vector.times(x, -1);
       } else {
-        other.velocity = x.times(1);
+        other.velocity = Vector.times(x, 1);
       }
     }
     _results = [];
     while (this.overlaps(other)) {
-      this.position = this.position.plus(this.velocity);
-      _results.push(other.position = other.position.plus(other.velocity));
+      this.position = Vector.plus(this.position, this.velocity);
+      _results.push(other.position = Vector.plus(other.position, other.velocity));
     }
     return _results;
   };
@@ -734,12 +733,12 @@ Mass = (function() {
     dt = this.universe.tick - this.tick;
     if ((this.lifetime -= dt) < 0) return this.remove();
     for (t = 0; 0 <= dt ? t < dt : t > dt; 0 <= dt ? t++ : t--) {
-      this.velocity = this.velocity.plus(this.acceleration);
-      if (this.acceleration.length() === 0 && this.mass >= 1000) {
-        this.velocity = this.velocity.times(0.99);
+      this.velocity = Vector.plus(this.velocity, this.acceleration);
+      if (Vector._length(this.acceleration) === 0 && this.mass >= 1000) {
+        this.velocity = Vector.times(this.velocity, 0.99);
       }
-      this.position = this.position.plus(this.velocity);
-      this.acceleration = this.acceleration.times(0.8);
+      this.position = Vector.plus(this.position, this.velocity);
+      this.acceleration = Vector.times(this.acceleration, 0.8);
       this.rotation += this.rotationalVelocity;
     }
     return this.tick = this.universe.tick;
@@ -778,8 +777,8 @@ ShipTrail = (function(_super) {
   function ShipTrail(options) {
     this.ship = options.ship;
     options.radius || (options.radius = 2);
-    options.position || (options.position = this.ship.position);
-    options.velocity || (options.velocity = new Vector((Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4));
+    options.position || (options.position = Vector.clone(this.ship.position));
+    options.velocity || (options.velocity = Vector._new((Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4));
     options.lifetime = 40;
     ShipTrail.__super__.constructor.call(this, options);
   }
@@ -814,8 +813,8 @@ WeaponsFire = (function(_super) {
     this.parent = options.parent;
     options || (options = {});
     options.radius || (options.radius = 1);
-    options.position || (options.position = this.parent.position);
-    options.velocity || (options.velocity = new Vector(this.parent.rotation).times(2));
+    options.position || (options.position = Vector.clone(this.parent.position));
+    options.velocity || (options.velocity = Vector.times(Vector._new(this.parent.rotation), 2));
     WeaponsFire.__super__.constructor.call(this, options);
   }
 
@@ -843,7 +842,7 @@ Bullet = (function(_super) {
     options.radius || (options.radius = 5);
     options.lifetime = 100;
     Bullet.__super__.constructor.call(this, options);
-    this.velocity = new Vector(this.parent.rotation).times(6);
+    this.velocity = Vector.times(Vector._new(this.parent.rotation), 6);
     this.rotation = this.parent.rotation;
   }
 
@@ -877,6 +876,7 @@ Ship = (function(_super) {
     options || (options = {});
     options.radius || (options.radius = 10);
     options.layer = 2;
+    options.velocity = Vector._new(0, 0);
     this.energy = options.energy || this.maxEnergy;
     this.max_speed = 3;
     this.max_accel = 0.03;
@@ -907,11 +907,11 @@ Ship = (function(_super) {
   };
 
   Ship.prototype.forward = function() {
-    return this.thrust(this.acceleration.plus(new Vector(this.rotation).times(this.max_accel)));
+    return this.thrust(Vector.plus(this.acceleration, Vector.times(Vector._new(this.rotation), this.max_accel)));
   };
 
   Ship.prototype.backward = function() {
-    return this.thrust(this.acceleration.minus(new Vector(this.rotation).times(this.max_accel)));
+    return this.thrust(Vector.minus(this.acceleration, Vector.times(Vector._new(this.rotation), this.max_accel)));
   };
 
   Ship.prototype.thrust = function(accel) {
@@ -953,14 +953,14 @@ Ship = (function(_super) {
     }
     if ((this.lifetime -= dt) < 0) return this.remove();
     for (t = 0; 0 <= dt ? t < dt : t > dt; 0 <= dt ? t++ : t--) {
-      newVelocity = this.velocity.plus(this.acceleration);
-      if (newVelocity.length() < this.max_speed) {
+      newVelocity = Vector.plus(this.velocity, this.acceleration);
+      if (Vector._length(newVelocity) < this.max_speed) {
         this.velocity = newVelocity;
       } else {
-        this.velocity = newVelocity.times(this.max_speed / newVelocity.length());
+        this.velocity = Vector.times(newVelocity, this.max_speed / Vector._length(newVelocity));
       }
-      this.position = this.position.plus(this.velocity);
-      this.acceleration = this.acceleration.times(0.8);
+      this.position = Vector.plus(this.position, this.velocity);
+      this.acceleration = Vector.times(this.acceleration, 0.8);
       this.rotation += this.rotationalVelocity;
       this.rotation = this.rotation % (Math.PI * 2);
     }
@@ -1136,7 +1136,7 @@ Turret = (function(_super) {
     if (this.target) {
       vector = this.target.position.minus(this.position);
       this.angle = Math.atan2(vector.y, vector.x);
-      return this.shouldFire = vector.length() < FIRING_DISTANCE;
+      return this.shouldFire = Vector._length() < FIRING_DISTANCE;
     } else {
       return this.shouldFire = false;
     }
@@ -1296,7 +1296,7 @@ MassDriver = (function(_super) {
   MassDriver.prototype._updateTargetting = function() {
     if (this.target) {
       this.vector = this.target.position.minus(this.position);
-      this.shouldFire = this.vector.length() < FIRING_DISTANCE;
+      this.shouldFire = this.Vector._length() < FIRING_DISTANCE;
       if (this.shouldFire) {
         return this.target.velocity = this.target.velocity.plus(this.vector.times(10));
       } else {
@@ -1349,7 +1349,7 @@ Viewpoint = (function() {
   function Viewpoint(canvas) {
     var _ref,
       _this = this;
-    this.position = new Vector(0, 0);
+    this.position = Vector._new(0, 0);
     _ref = [canvas.width, canvas.height], this.width = _ref[0], this.height = _ref[1];
     $(window).resize(function() {
       var _ref2;
@@ -1367,7 +1367,7 @@ Viewpoint = (function() {
   };
 
   Viewpoint.prototype.offscreen = function(vector) {
-    vector = vector.minus(this.position);
+    vector = Vector.minus(vector, this.position);
     return vector.x < 0 || vector.x > this.width || vector.y < 0 || vector.y > this.height;
   };
 
@@ -1377,47 +1377,63 @@ Viewpoint = (function() {
 
 Vector = (function() {
 
-  function Vector(x, y, z) {
+  function Vector() {}
+
+  Vector._new = function(x, y) {
     var _ref;
-    _ref = y != null ? [x, y] : [Math.cos(x), Math.sin(x)], this.x = _ref[0], this.y = _ref[1];
-    this.z = z != null ? z : 0;
-    this.x || (this.x = 0);
-    this.y || (this.y = 0);
-    this._zeroSmall();
-  }
-
-  Vector.prototype.plus = function(v) {
-    return new Vector(this.x + v.x, this.y + v.y);
+    _ref = y != null ? [x, y] : [Math.cos(x), Math.sin(x)], x = _ref[0], y = _ref[1];
+    x || (x = 0);
+    y || (y = 0);
+    return this._zeroSmall({
+      x: x,
+      y: y
+    });
   };
 
-  Vector.prototype.minus = function(v) {
-    return new Vector(this.x - v.x, this.y - v.y);
+  Vector.plus = function(vector, v) {
+    return {
+      x: vector.x + v.x,
+      y: vector.y + v.y
+    };
   };
 
-  Vector.prototype.times = function(s) {
-    return new Vector(this.x * s, this.y * s);
+  Vector.minus = function(vector, v) {
+    return {
+      x: vector.x - v.x,
+      y: vector.y - v.y
+    };
   };
 
-  Vector.prototype.length = function() {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
+  Vector.times = function(vector, s) {
+    return {
+      x: vector.x * s,
+      y: vector.y * s
+    };
   };
 
-  Vector.prototype.normalized = function() {
-    return this.times(1.0 / this.length());
+  Vector._length = function(vector) {
+    return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
   };
 
-  Vector.prototype.dotProduct = function(other) {
-    return (this.x * other.x) + (this.y * other.y);
+  Vector.normalized = function(vector) {
+    return this.times(vector, 1.0 / this._length(vector));
   };
 
-  Vector.prototype.clone = function() {
-    return new Vector(this.x, this.y, this.z);
+  Vector.dotProduct = function(vector, other) {
+    return (vector.x * other.x) + (vector.y * other.y);
   };
 
-  Vector.prototype._zeroSmall = function() {
-    if (Math.abs(this.x) < 0.01) this.x = 0;
-    if (Math.abs(this.y) < 0.01) this.y = 0;
-    if (Math.abs(this.z) < 0.01) return this.z = 0;
+  Vector.clone = function(vector) {
+    return {
+      x: vector.x,
+      y: vector.y
+    };
+  };
+
+  Vector._zeroSmall = function(vector) {
+    if (Math.abs(vector.x) < 0.01) vector.x = 0;
+    if (Math.abs(vector.y) < 0.01) vector.y = 0;
+    return vector;
   };
 
   return Vector;

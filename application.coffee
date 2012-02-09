@@ -104,7 +104,7 @@ class Universe
     for id, player of @players.items
       if player.commandCentre?
         if @viewpoint.offscreen player.commandCentre.position
-          vector = player.commandCentre.position.minus(@viewpoint.position)
+          vector = Vector.minus player.commandCentre.position, @viewpoint.position
           if vector.x < 0
             vector.x = 0
           else if vector.x > @viewpoint.width
@@ -208,7 +208,7 @@ class Player
     [x, y] = [Math.random() * w * 8, Math.random() * h * 8]
 
     @commandCentre = new CommandCentre {
-      position: new Vector x, y
+      position: Vector._new(x, y)
       player: this
     }
     @universe.add @commandCentre
@@ -219,7 +219,7 @@ class Player
     y = @commandCentre.position.y + @commandCentre.radius
 
     @ship = new Ship {
-      position: new Vector x, y
+      position: Vector._new(x, y)
       rotation: Math.PI / 2
       player: this
     }
@@ -316,9 +316,9 @@ class AiPlayer extends Player
 
   aiStep: ->
     if @target && @target.alive()
-      vector = @target.position.minus(@ship.position)
+      vector = Vector.minus @target.position, @ship.position
       @angle = Math.atan2(vector.y, vector.x)
-      @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
+      @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && Vector._length(vector) < FIRE_MAX_DISTANCE
     else
       @fire = false
       @_chooseTarget()
@@ -329,12 +329,13 @@ class Star
   constructor: (options) ->
     @position = options.position
     @alpha = options.alpha
+    @z = Math.random()
 
   render: (ctx, viewpoint, MULT) ->
     ctx.save()
 
-    x = @position.x - (viewpoint.position.x / (@position.z + 1))
-    y = @position.y - (viewpoint.position.y / (@position.z + 1))
+    x = @position.x - (viewpoint.position.x / (@z + 1))
+    y = @position.y - (viewpoint.position.y / (@z + 1))
 
     # wrap stars
     x -= Math.floor(x / (viewpoint.width * MULT)) * (viewpoint.width * MULT)
@@ -347,7 +348,7 @@ class Star
 
     ctx.translate x, y
 
-    alpha = (1 - @position.z) / 2
+    alpha = (1 - @z) / 2
     ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')'
 
     ctx.beginPath()
@@ -368,10 +369,9 @@ class Starfield
   generate: (viewpoint) ->
     for i in [1..@NUM_STARS]
       @stars.push new Star {
-        position: new Vector(
+        position: Vector._new(
           Math.random() * viewpoint.width * @MULT,
-          Math.random() * viewpoint.height * @MULT,
-          Math.random()
+          Math.random() * viewpoint.height * @MULT
         )
       }
 
@@ -436,9 +436,9 @@ class Mass
     o = options or {}
     @id = Math.random(9999999999999) # TODO
     @radius = o.radius or 1
-    @position = o.position or new Vector()
-    @velocity = o.velocity or new Vector()
-    @acceleration = o.acceleration or new Vector()
+    @position = o.position or Vector._new(0, 0)
+    @velocity = o.velocity or Vector._new(0, 0)
+    @acceleration = o.acceleration or Vector._new(0, 0)
     @rotation = o.rotation or 0
     @rotationalVelocity = o.rotationalVelocity or 0
     @player = o.player
@@ -457,58 +457,58 @@ class Mass
 
   overlaps: (other) ->
     return false unless other != this
-    diff = other.position.minus(@position).length()
+    diff = Vector._length(Vector.minus(other.position, @position))
     diff < (other.radius + @radius)
 
   handleCollision: (other) ->
     return unless @solid and other.solid
-    x = @position.minus(other.position).normalized()
+
+    x = Vector.normalized(Vector.minus(@position, other.position))
+
     v1 = @velocity
-    x1 = x.dotProduct(v1)
-    v1x = x.times(x1)
-    v1y = v1.minus(v1x)
+    x1 = Vector.dotProduct(x, v1)
+    v1x = Vector.times(x, x1)
+    v1y = Vector.minus(v1, v1x)
     m1 = @mass
 
-    x = x.times(-1)
+    x = Vector.times(x, -1)
     v2 = other.velocity
-    x2 = x.dotProduct(v2)
-    v2x = x.times(x2)
-    v2y = v2.minus(v2x)
+    x2 = Vector.dotProduct(x, v2)
+    v2x = Vector.times(x, x2)
+    v2y = Vector.minus(v2, v2x)
     m2 = other.mass
 
-    @velocity = v1x.times((m1 - m2) / (m1 + m2)).plus(v2x.times((2 * m2) / (m1 + m2)).plus(v1y)).times(0.75)
-    @velocity._zeroSmall()
-    @acceleration = new Vector 0, 0
+    @velocity = Vector._zeroSmall(Vector.times(Vector.plus(Vector.times(v1x, (m1 - m2) / (m1 + m2)), Vector.plus(Vector.times(v2x, (2 * m2) / (m1 + m2)), v1y)), 0.75))
+    @acceleration = Vector._new(0, 0)
 
-    other.velocity = v1x.times((2 * m1) / (m1 + m2)).plus(v2x.times((m2 - m1) / (m1 + m2)).plus(v2y)).times(0.75)
-    other.velocity._zeroSmall()
-    other.acceleration = new Vector 0, 0
+    other.velocity = Vector._zeroSmall(Vector.times(Vector.plus(Vector.times(v1x, (2 * m1) / (m1 + m2)), Vector.plus(Vector.times(v2x, (m2 - m1) / (m1 + m2)), v2y)), 0.75))
+    other.acceleration = Vector._new(0, 0)
 
     # check that both velocities aren't zero, if so set the
     # velocity of the object with the smallest mass to be the normal
-    if @velocity.length() == 0 and other.velocity.length() == 0
+    if Vector._length(@velocity) == 0 and Vector._length(other.velocity) == 0
       if m1 < m2
-        @velocity = x.times -1
+        @velocity = Vector.times x, -1
       else
-        other.velocity = x.times 1
+        other.velocity = Vector.times x, 1
 
     # make sure the objects are no longer touching, otherwise
     # hack away until they aren't
     while @overlaps other
-      @position = @position.plus(@velocity)
-      other.position = other.position.plus(other.velocity)
+      @position = Vector.plus @position, @velocity
+      other.position = Vector.plus other.position, other.velocity
 
   step: ->
     dt = @universe.tick - @tick
     return @remove() if (@lifetime -= dt) < 0
 
     for t in [0...dt]
-      @velocity = @velocity.plus @acceleration
+      @velocity = Vector.plus @velocity, @acceleration
       # magical force to stop large objects
-      if @acceleration.length() == 0 && @mass >= 1000
-        @velocity = @velocity.times 0.99
-      @position = @position.plus @velocity
-      @acceleration = @acceleration.times 0.8 # drag
+      if Vector._length(@acceleration) == 0 && @mass >= 1000
+        @velocity = Vector.times @velocity, 0.99
+      @position = Vector.plus @position, @velocity
+      @acceleration = Vector.times @acceleration, 0.8 # drag
       @rotation += @rotationalVelocity
 
     @tick = @universe.tick
@@ -538,8 +538,8 @@ class ShipTrail extends Mass
   constructor: (options) ->
     @ship = options.ship
     options.radius ||= 2
-    options.position ||= @ship.position
-    options.velocity ||= new Vector (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4
+    options.position ||= Vector.clone @ship.position
+    options.velocity ||= Vector._new (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4
     options.lifetime = 40
     super options
 
@@ -561,8 +561,8 @@ class WeaponsFire extends Mass
     @parent = options.parent
     options ||= {}
     options.radius ||= 1
-    options.position ||= @parent.position
-    options.velocity ||= new Vector(@parent.rotation).times(2)
+    options.position ||= Vector.clone @parent.position
+    options.velocity ||= Vector.times Vector._new(@parent.rotation), 2
     super options
 
   handleCollision: (other) ->
@@ -581,7 +581,7 @@ class Bullet extends WeaponsFire
     options.radius ||= 5
     options.lifetime = 100
     super options
-    @velocity = new Vector(@parent.rotation).times(6)
+    @velocity = Vector.times Vector._new(@parent.rotation), 6
     @rotation = @parent.rotation
 
   _render: (ctx) ->
@@ -603,6 +603,7 @@ class Ship extends Mass
     options ||= {}
     options.radius ||= 10
     options.layer = 2
+    options.velocity = Vector._new(0, 0)
     @energy = options.energy or @maxEnergy
     @max_speed = 3
     @max_accel = 0.03
@@ -632,10 +633,10 @@ class Ship extends Mass
     ctx.stroke()
 
   forward: ->
-    @thrust @acceleration.plus(new Vector(@rotation).times(@max_accel))
+    @thrust Vector.plus @acceleration, Vector.times Vector._new(@rotation), @max_accel
 
   backward: ->
-    @thrust @acceleration.minus(new Vector(@rotation).times(@max_accel))
+    @thrust Vector.minus @acceleration, Vector.times Vector._new(@rotation), @max_accel
 
   thrust: (accel) ->
     if @trailDelay <= 0
@@ -666,14 +667,14 @@ class Ship extends Mass
     return @remove() if (@lifetime -= dt) < 0
 
     for t in [0...dt]
-      newVelocity = @velocity.plus @acceleration
-      if newVelocity.length() < @max_speed
+      newVelocity = Vector.plus @velocity, @acceleration
+      if Vector._length(newVelocity) < @max_speed
         @velocity = newVelocity
       else
-        @velocity = newVelocity.times (@max_speed / newVelocity.length())
+        @velocity = Vector.times newVelocity, (@max_speed / Vector._length newVelocity)
 
-      @position = @position.plus @velocity
-      @acceleration = @acceleration.times 0.8 # drag
+      @position = Vector.plus @position, @velocity
+      @acceleration = Vector.times @acceleration, 0.8 # drag
       @rotation += @rotationalVelocity
       @rotation = @rotation % (Math.PI * 2)
 
@@ -812,7 +813,7 @@ class Turret extends Mass
     if @target
       vector = @target.position.minus(@position)
       @angle = Math.atan2(vector.y, vector.x)
-      @shouldFire = vector.length() < FIRING_DISTANCE
+      @shouldFire = Vector._length() < FIRING_DISTANCE
     else
       @shouldFire = false
 
@@ -928,7 +929,7 @@ class MassDriver extends Mass
   _updateTargetting: ->
     if @target
       @vector = @target.position.minus(@position)
-      @shouldFire = @vector.length() < FIRING_DISTANCE
+      @shouldFire = @Vector._length() < FIRING_DISTANCE
       if @shouldFire
         @target.velocity = @target.velocity.plus @vector.times(10)
       else
@@ -976,7 +977,7 @@ class Viewpoint
   BUFFER: 40
 
   constructor: (canvas) ->
-    @position = new Vector 0, 0
+    @position = Vector._new(0, 0)
     [@width, @height] = [canvas.width, canvas.height]
     $(window).resize () =>
       [@width, @height] = [canvas.width, canvas.height]
@@ -990,43 +991,57 @@ class Viewpoint
     ctx.translate -@position.x, -@position.y
 
   offscreen: (vector) ->
-    vector = vector.minus @position
+    vector = Vector.minus vector, @position
     vector.x < 0 || vector.x > @width || vector.y < 0 || vector.y > @height
 
 class Vector
   # can pass either x, y coords or radians for a unit vector
-  constructor: (x, y, z) ->
-    [@x, @y] = if y? then [x, y] else [Math.cos(x), Math.sin(x)]
-    @z = if z? then z else 0
-    @x ||= 0
-    @y ||= 0
-    @_zeroSmall()
+  @_new: (x, y) ->
+    [x, y] = if y? then [x, y] else [Math.cos(x), Math.sin(x)]
+    x ||= 0
+    y ||= 0
+    @_zeroSmall({
+      x: x,
+      y: y
+    })
 
-  plus: (v) ->
-    new Vector @x + v.x, @y + v.y
+  @plus: (vector, v) ->
+    {
+      x: vector.x + v.x,
+      y: vector.y + v.y
+    }
 
-  minus: (v) ->
-    new Vector @x - v.x, @y - v.y
+  @minus: (vector, v) ->
+    {
+      x: vector.x - v.x,
+      y: vector.y - v.y
+    }
 
-  times: (s) ->
-    new Vector @x * s, @y * s
+  @times: (vector, s) ->
+    {
+      x: vector.x * s
+      y: vector.y * s
+    }
 
-  length: ->
-    Math.sqrt @x * @x + @y * @y
+  @_length: (vector) ->
+    Math.sqrt vector.x * vector.x + vector.y * vector.y
 
-  normalized: ->
-    @times 1.0 / @length()
+  @normalized: (vector) ->
+    @times vector, (1.0 / @_length vector)
 
-  dotProduct: (other) ->
-    (@x * other.x) + (@y * other.y)# + (@z * other.z)
+  @dotProduct: (vector, other) ->
+    (vector.x * other.x) + (vector.y * other.y)
 
-  clone: ->
-    new Vector @x, @y, @z
+  @clone: (vector) ->
+    {
+      x: vector.x,
+      y: vector.y
+    }
 
-  _zeroSmall: ->
-    @x = 0 if Math.abs(@x) < 0.01
-    @y = 0 if Math.abs(@y) < 0.01
-    @z = 0 if Math.abs(@z) < 0.01
+  @_zeroSmall: (vector) ->
+    vector.x = 0 if Math.abs(vector.x) < 0.01
+    vector.y = 0 if Math.abs(vector.y) < 0.01
+    vector
 Gt.Vector = Vector
 
 # initialize
