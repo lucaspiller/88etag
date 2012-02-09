@@ -222,20 +222,24 @@ Universe = (function() {
     _results = [];
     for (id in _ref) {
       m1 = _ref[id];
-      _results.push((function() {
-        var _ref2, _results2;
-        _ref2 = this.masses.items;
-        _results2 = [];
-        for (id in _ref2) {
-          m2 = _ref2[id];
-          if (m1.overlaps(m2)) {
-            _results2.push(m1.handleCollision(m2));
-          } else {
-            _results2.push(void 0);
+      if (m1.moved) {
+        _results.push((function() {
+          var _ref2, _results2;
+          _ref2 = this.masses.items;
+          _results2 = [];
+          for (id in _ref2) {
+            m2 = _ref2[id];
+            if (m1.overlaps(m2)) {
+              _results2.push(m1.handleCollision(m2));
+            } else {
+              _results2.push(void 0);
+            }
           }
-        }
-        return _results2;
-      }).call(this));
+          return _results2;
+        }).call(this));
+      } else {
+        _results.push(void 0);
+      }
     }
     return _results;
   };
@@ -673,6 +677,7 @@ Mass = (function() {
     this.lifetime = o.lifetime || 24 * 60;
     this.layer = o.layer || 0;
     this.health = o.health || this.maxHealth;
+    this.moved = true;
   }
 
   Mass.prototype.explode = function() {
@@ -729,9 +734,10 @@ Mass = (function() {
   };
 
   Mass.prototype.step = function() {
-    var dt, t;
+    var dt, oldPosition, t;
     dt = this.universe.tick - this.tick;
     if ((this.lifetime -= dt) < 0) return this.remove();
+    oldPosition = this.position;
     for (t = 0; 0 <= dt ? t < dt : t > dt; 0 <= dt ? t++ : t--) {
       this.velocity = Vector.plus(this.velocity, this.acceleration);
       if (Vector._length(this.acceleration) === 0 && this.mass >= 1000) {
@@ -741,6 +747,7 @@ Mass = (function() {
       this.acceleration = Vector.times(this.acceleration, 0.8);
       this.rotation += this.rotationalVelocity;
     }
+    this.moved = !Vector.equal(oldPosition, this.position);
     return this.tick = this.universe.tick;
   };
 
@@ -1434,6 +1441,10 @@ Vector = (function() {
     if (Math.abs(vector.x) < 0.01) vector.x = 0;
     if (Math.abs(vector.y) < 0.01) vector.y = 0;
     return vector;
+  };
+
+  Vector.equal = function(vector, other) {
+    return vector.x === other.x && vector.y === other.y;
   };
 
   return Vector;

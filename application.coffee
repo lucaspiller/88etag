@@ -155,9 +155,10 @@ class Universe
 
   checkCollisions: ->
     for id, m1 of @masses.items
-      for id, m2 of @masses.items
-        if m1.overlaps m2
-          m1.handleCollision m2
+        if m1.moved
+          for id, m2 of @masses.items
+            if m1.overlaps m2
+              m1.handleCollision m2
 Gt.Universe = Universe
 
 class PlayerStorage
@@ -445,6 +446,7 @@ class Mass
     @lifetime = o.lifetime or 24 * 60
     @layer = o.layer or 0
     @health = o.health or @maxHealth
+    @moved = true
 
   explode: ->
     @remove()
@@ -502,6 +504,7 @@ class Mass
     dt = @universe.tick - @tick
     return @remove() if (@lifetime -= dt) < 0
 
+    oldPosition = @position
     for t in [0...dt]
       @velocity = Vector.plus @velocity, @acceleration
       # magical force to stop large objects
@@ -510,6 +513,7 @@ class Mass
       @position = Vector.plus @position, @velocity
       @acceleration = Vector.times @acceleration, 0.8 # drag
       @rotation += @rotationalVelocity
+    @moved = not Vector.equal oldPosition, @position
 
     @tick = @universe.tick
 
@@ -1042,6 +1046,9 @@ class Vector
     vector.x = 0 if Math.abs(vector.x) < 0.01
     vector.y = 0 if Math.abs(vector.y) < 0.01
     vector
+
+  @equal: (vector, other) ->
+    vector.x == other.x && vector.y == other.y
 Gt.Vector = Vector
 
 # initialize
