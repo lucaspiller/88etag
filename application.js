@@ -1123,7 +1123,7 @@ Turret = (function(_super) {
     this.target = false;
     closeObjects = _.filter(this.universe.masses.items, function(mass, id) {
       if (mass.player && mass.player !== _this.player) {
-        return mass.position.minus(_this.position).length() < TARGETTING_DISTANCE;
+        return Vector._length(Vector.minus(mass.position, _this.position)) < TARGETTING_DISTANCE;
       }
     });
     if (closeObjects.length > 0) {
@@ -1134,9 +1134,9 @@ Turret = (function(_super) {
   Turret.prototype._updateTargetting = function() {
     var vector;
     if (this.target) {
-      vector = this.target.position.minus(this.position);
+      vector = Vector.minus(this.target.position, this.position);
       this.angle = Math.atan2(vector.y, vector.x);
-      return this.shouldFire = Vector._length() < FIRING_DISTANCE;
+      return this.shouldFire = Vector._length(vector) < FIRING_DISTANCE;
     } else {
       return this.shouldFire = false;
     }
@@ -1285,7 +1285,7 @@ MassDriver = (function(_super) {
     this.target = false;
     closeObjects = _.filter(this.universe.masses.items, function(mass, id) {
       if (mass.player && mass.player !== _this.player) {
-        return mass.position.minus(_this.position).length() < TARGETTING_DISTANCE;
+        return Vector._length(Vector.minus(mass.position, _this.position)) < TARGETTING_DISTANCE;
       }
     });
     if (closeObjects.length > 0) {
@@ -1295,10 +1295,10 @@ MassDriver = (function(_super) {
 
   MassDriver.prototype._updateTargetting = function() {
     if (this.target) {
-      this.vector = this.target.position.minus(this.position);
-      this.shouldFire = this.Vector._length() < FIRING_DISTANCE;
+      this.vector = Vector.minus(this.target.position, this.position);
+      this.shouldFire = Vector._length(this.vector) < FIRING_DISTANCE;
       if (this.shouldFire) {
-        return this.target.velocity = this.target.velocity.plus(this.vector.times(10));
+        return this.target.velocity = Vector.plus(this.target.velocity, Vector.times(this.vector, 10));
       } else {
         return this.target = false;
       }

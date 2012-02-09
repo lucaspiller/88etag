@@ -805,15 +805,15 @@ class Turret extends Mass
     @target = false
     closeObjects = _.filter @universe.masses.items, (mass, id) =>
       if mass.player && mass.player != @player
-        mass.position.minus(@position).length() < TARGETTING_DISTANCE
+        Vector._length(Vector.minus(mass.position, @position)) < TARGETTING_DISTANCE
     if closeObjects.length > 0
       @target = closeObjects[Math.ceil(Math.random(closeObjects.length)) - 1]
 
   _updateTargetting: ->
     if @target
-      vector = @target.position.minus(@position)
+      vector = Vector.minus(@target.position, @position)
       @angle = Math.atan2(vector.y, vector.x)
-      @shouldFire = Vector._length() < FIRING_DISTANCE
+      @shouldFire = Vector._length(vector) < FIRING_DISTANCE
     else
       @shouldFire = false
 
@@ -922,16 +922,16 @@ class MassDriver extends Mass
     @target = false
     closeObjects = _.filter @universe.masses.items, (mass, id) =>
       if mass.player && mass.player != @player
-        mass.position.minus(@position).length() < TARGETTING_DISTANCE
+        Vector._length(Vector.minus(mass.position, @position)) < TARGETTING_DISTANCE
     if closeObjects.length > 0
       @target = closeObjects[Math.ceil(Math.random(closeObjects.length)) - 1]
 
   _updateTargetting: ->
     if @target
-      @vector = @target.position.minus(@position)
-      @shouldFire = @Vector._length() < FIRING_DISTANCE
+      @vector = Vector.minus(@target.position, @position)
+      @shouldFire = Vector._length(@vector) < FIRING_DISTANCE
       if @shouldFire
-        @target.velocity = @target.velocity.plus @vector.times(10)
+        @target.velocity = Vector.plus(@target.velocity, Vector.times(@vector, 10))
       else
         @target = false
     else
