@@ -41,14 +41,9 @@ class Controller
     @scene.add @camera
 
     # add light sources
-    @light1 = new THREE.PointLight 0xffffff
-    @scene.add @light1
-
-    @light2 = new THREE.PointLight 0xffffff
-    @scene.add @light2
-
-    @light3 = new THREE.PointLight 0xffffff
-    @scene.add @light3
+    @scene.add new THREE.AmbientLight 0x999999
+    @light = new THREE.PointLight 0xffffff
+    @scene.add @light
 
   width: ->
     window.innerWidth
@@ -61,9 +56,7 @@ class Controller
 
     @universe.step()
 
-    @light1.position.set @camera.position.x + 100, @camera.position.y + 100, 500
-    @light2.position.set @camera.position.x - 100, @camera.position.y - 100, 500
-    @light3.position.set @camera.position.x, @camera.position.y, CAMERA_Z
+    @light.position.set @camera.position.x, @camera.position.y, CAMERA_Z * 10
     @renderer.render @scene, @camera
 
     @stats.update() if @stats
@@ -109,6 +102,7 @@ class Movable
   buildMesh: ->
     geometry = new THREE.CubeGeometry 1, 1, 1
     material = new THREE.MeshLambertMaterial {
+      ambient: 0xFF0000
       color: 0xFF0000
     }
     new THREE.Mesh geometry, material

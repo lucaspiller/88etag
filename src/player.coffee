@@ -8,6 +8,7 @@ class Player extends Movable
   buildMesh: ->
     geometry = new THREE.CubeGeometry 30, 10, 10
     material = new THREE.MeshLambertMaterial {
+      ambient: 0x5E574B
       color: 0x5E574B
     }
     new THREE.Mesh geometry, material
