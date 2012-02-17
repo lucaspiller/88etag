@@ -59,12 +59,14 @@ class Controller
 
 class Universe
   constructor: (@controller) ->
+    @starfield = new Starfield @controller
     @buildPlayer()
 
   buildPlayer: ->
     @player = new LocalPlayer @controller
 
   step: ->
+    @starfield.step()
     @player.step()
 
 class Movable
