@@ -1,5 +1,5 @@
 class Player extends Movable
-  radius: 20
+  radius: 25
   mass: 1
   max_speed: 2
   max_accel: 0.05
@@ -14,12 +14,11 @@ class Player extends Movable
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
 
   buildMesh: ->
-    geometry = new THREE.CubeGeometry 20, 15, 15
     material = new THREE.MeshLambertMaterial {
       ambient: 0x5E574B
       color: 0x5E574B
     }
-    new THREE.Mesh geometry, material
+    new THREE.Mesh @controller.geometries['models/ship_basic.js'], material
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64

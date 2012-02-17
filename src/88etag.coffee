@@ -4,11 +4,14 @@ class Controller
   FAR = 1000
   CAMERA_Z = 1000
 
+  models: [
+    'models/ship_basic.js'
+  ]
+
   constructor: (@container) ->
     @setupRenderer()
     @setupScene()
-    @universe = new Universe this
-    @render()
+    @load()
 
   width: ->
     window.innerWidth
@@ -50,6 +53,20 @@ class Controller
 
   height: ->
     window.innerHeight
+
+  load: ->
+    @geometries = {}
+    loader = new THREE.JSONLoader()
+    for model in @models
+      loader.load model, (geometry) =>
+        geometry.computeVertexNormals()
+        @geometries[model] = geometry
+        if _.size(@geometries) == _.size(@models)
+          @continueLoad()
+
+  continueLoad: ->
+    @universe = new Universe this
+    @render()
 
   render: ->
     requestAnimationFrame (=> @render())
