@@ -118,7 +118,40 @@ class Universe
             m1.handleCollision m2
     true
 
+class HealthBall
+  constructor: (options) ->
+    @controller = options.controller
+    @position = options.position
+    @healthMax = options.healthMax
+    @radius = options.radius
+
+    @buildMeshes()
+
+  buildMeshes: ->
+    geometry = new THREE.CylinderGeometry @radius, @radius, 0.1, 16
+    material = new THREE.MeshPhongMaterial()
+    material.color.setRGB(0, 25 / 255, 0)
+    material.opacity = 0.3
+    @outerMesh = new THREE.Mesh geometry, material
+    @outerMesh.rotateAboutWorldAxis(THREE.AxisX, Math.PI / 2)
+    @controller.scene.add @outerMesh
+
+    geometry = new THREE.CylinderGeometry @radius, @radius, 0.1, 16
+    material = new THREE.MeshBasicMaterial()
+    material.color.setRGB(0, 68 / 255, 0)
+    material.opacity = 0.8
+    @innerMesh = new THREE.Mesh geometry, material
+    @innerMesh.rotateAboutWorldAxis(THREE.AxisX, Math.PI / 2)
+    @controller.scene.add @innerMesh
+
+  update: (position, health) ->
+    @outerMesh.position.set(position.x, position.y, position.z - 0.2)
+    @innerMesh.position.set(position.x, position.y, position.z - 0.1)
+    @innerMesh.scale.set(health / @healthMax, health / @healthMax, 1)
+
 class Movable
+  healthMax: 100
+  healthRadius: 10
   mass: 1
   solid: true
   radius: 10
@@ -135,8 +168,17 @@ class Movable
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
     @position = @mesh.position = new THREE.Vector3 0, 0, 500
     @rotation = 0
+    @health = @healthMax
 
     @universe.masses.push this
+
+    if @solid
+      @healthBall = new HealthBall {
+        controller: @controller
+        position: @position
+        healthMax: @healthMax
+        radius: @healthRadius
+      }
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 10, 10, 10
@@ -154,6 +196,9 @@ class Movable
     if Math.abs(@rotationalVelocity) > 0
       @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
       @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
+
+    if @solid
+      @healthBall.update @position, @health
 
   overlaps: (other) ->
     return false if other == this

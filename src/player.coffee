@@ -1,5 +1,6 @@
 class Player extends Movable
-  radius: 25
+  healthRadius: 8
+  radius: 20
   mass: 1
   max_speed: 2
   max_accel: 0.05
@@ -78,7 +79,8 @@ class LocalPlayer extends Player
 
 class CommandCentre extends Movable
   mass: 999999999999999999
-  radius: 40
+  healthRadius: 40
+  radius: 45
   rotationalVelocity: Math.PI / 512
 
   constructor: (options) ->
