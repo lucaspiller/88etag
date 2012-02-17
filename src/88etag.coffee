@@ -90,6 +90,7 @@ class Universe
       @keys = _.without @keys, e.which
 
   step: ->
+    @starfield.step()
     mass.step() for mass in @masses
 
   checkCollisions: ->

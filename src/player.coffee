@@ -34,6 +34,7 @@ class Player extends Movable
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
     @universe.trails.newShipTrail this
+    @mesh.rotateAboutObjectAxis(THREE.AxisX, Math.PI / 128)
 
   backward: ->
     @acceleration.x = -Math.cos(@rotation)
@@ -42,6 +43,7 @@ class Player extends Movable
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
     @universe.trails.newShipTrail this
+    @mesh.rotateAboutObjectAxis(THREE.AxisX, -Math.PI / 128)
 
   step: ->
     @commandCentre.step()
@@ -56,7 +58,6 @@ class Player extends Movable
       @rotationalVelocity *= 0.9
     else
       @rotationalVelocity = 0
-    @mesh.rotateAboutObjectAxis(THREE.AxisX, Math.PI / 128)
     super
 
 class LocalPlayer extends Player
