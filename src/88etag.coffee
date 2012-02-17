@@ -72,9 +72,19 @@ class Universe
   constructor: (@controller) ->
     @starfield = new Starfield @controller
     @buildPlayer()
+    @bindKeys()
 
   buildPlayer: ->
     @player = new LocalPlayer @controller
+
+  bindKeys: ->
+    @keys = []
+
+    $(window).keydown (e) =>
+      @keys.push e.which
+
+    $(window).keyup (e) =>
+      @keys = _.without @keys, e.which
 
   step: ->
     @starfield.step()
