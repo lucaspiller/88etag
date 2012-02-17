@@ -40,10 +40,15 @@ class Controller
     @camera.position.set 0, 0, CAMERA_Z
     @scene.add @camera
 
-    # add a light source
-    @light = new THREE.PointLight 0xffffff
-    @light.position.set 0, 0, CAMERA_Z * 10
-    @scene.add @light
+    # add light sources
+    @light1 = new THREE.PointLight 0xffffff
+    @scene.add @light1
+
+    @light2 = new THREE.PointLight 0xffffff
+    @scene.add @light2
+
+    @light3 = new THREE.PointLight 0xffffff
+    @scene.add @light3
 
   width: ->
     window.innerWidth
@@ -53,8 +58,14 @@ class Controller
 
   render: ->
     requestAnimationFrame (=> @render())
+
     @universe.step()
+
+    @light1.position.set @camera.position.x + 100, @camera.position.y + 100, 10
+    @light2.position.set @camera.position.x - 100, @camera.position.y - 100, 10
+    @light3.position.set @camera.position.x, @camera.position.y, CAMERA_Z * 10
     @renderer.render @scene, @camera
+
     @stats.update() if @stats
 
 class Universe
