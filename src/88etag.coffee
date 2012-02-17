@@ -65,6 +65,10 @@ class Controller
 class Universe
   constructor: (@controller) ->
     @starfield = new Starfield @controller
+    @trails = new TrailsContainer {
+      controller: @controller,
+      universe: this
+    }
     @masses = []
     @buildPlayer()
     @bindKeys()
@@ -80,6 +84,7 @@ class Universe
 
     $(window).keydown (e) =>
       @keys.push e.which
+      @keys = _.uniq @keys
 
     $(window).keyup (e) =>
       @keys = _.without @keys, e.which
@@ -167,6 +172,51 @@ class Movable
       @position.addSelf(@velocity)
       other.position.addSelf(other.velocity)
 
+class ShipTrail extends Movable
+  constructor: (options) ->
+    super options
+
+  setup: (position, velocity) ->
+    @position.set position.x, position.y, position.z - 10
+    @velocity.set Math.random() - 0.5, Math.random() - 0.5, 0
+    @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+    @mesh.material.ambient.setRGB(0, 0, 0)
+    @lifetime = 40
+    @alive = true
+
+  remove: ->
+    @alive = false
+    @position.z = @controller.NEAR
+    @universe.trails.addToPool this
+
+  step: ->
+    if @alive
+      if @lifetime > 0
+        @position.addSelf @velocity
+        @mesh.material.color.r -= (1 / 30)
+        @mesh.material.color.g -= (1 / 30)
+        @mesh.material.color.b -= (1 / 30)
+        @lifetime--
+      else
+        @remove()
+
+class TrailsContainer
+  constructor: (options) ->
+    @universe = options.universe
+    @controller = options.controller
+    @pool = []
+
+  addToPool: (trail) ->
+    @pool.push trail
+
+  newShipTrail: (parent) ->
+    trail = @pool.pop()
+    unless trail
+      trail = new ShipTrail {
+        controller: @controller
+        universe: @universe
+      }
+    trail.setup parent.position, parent.velocity
 
 $(document).ready ->
     unless Detector.webgl

@@ -33,6 +33,7 @@ class Player extends Movable
     accel = @acceleration.length()
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
+    @universe.trails.newShipTrail this
 
   backward: ->
     @acceleration.x = -Math.cos(@rotation)
@@ -40,6 +41,7 @@ class Player extends Movable
     accel = @acceleration.length()
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
+    @universe.trails.newShipTrail this
 
   step: ->
     @commandCentre.step()
