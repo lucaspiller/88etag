@@ -1,8 +1,8 @@
 class Controller
   VIEW_ANGLE = 45
   NEAR = 1
-  FAR = 100
-  CAMERA_Z = 100
+  FAR = 1000
+  CAMERA_Z = 1000
 
   constructor: (@container) ->
     @setupRenderer()
@@ -61,9 +61,9 @@ class Controller
 
     @universe.step()
 
-    @light1.position.set @camera.position.x + 100, @camera.position.y + 100, 10
-    @light2.position.set @camera.position.x - 100, @camera.position.y - 100, 10
-    @light3.position.set @camera.position.x, @camera.position.y, CAMERA_Z * 10
+    @light1.position.set @camera.position.x + 100, @camera.position.y + 100, 500
+    @light2.position.set @camera.position.x - 100, @camera.position.y - 100, 500
+    @light3.position.set @camera.position.x, @camera.position.y, CAMERA_Z
     @renderer.render @scene, @camera
 
     @stats.update() if @stats
@@ -101,7 +101,7 @@ class Movable
     @mesh = @buildMesh()
     @mesh.rotateAboutWorldAxis THREE.AxisZ, 0.001 # hack to fix a bug in ThreeJS?
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
-    @position = @mesh.position = new THREE.Vector3 0, 0, 90
+    @position = @mesh.position = new THREE.Vector3 0, 0, 500
     @controller.scene.add @mesh
     @rotationalVelocity = 0
     @rotation = 0

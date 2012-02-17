@@ -1,12 +1,12 @@
 class Player extends Movable
   constructor: (controller) ->
     super controller
-    @max_speed = 0.5
-    @max_accel = 0.01
+    @max_speed = 5
+    @max_accel = 0.1
     @acceleration = new THREE.Vector3 0, 0, 0
 
   buildMesh: ->
-    geometry = new THREE.CubeGeometry 3, 1, 1
+    geometry = new THREE.CubeGeometry 30, 10, 10
     material = new THREE.MeshLambertMaterial {
       color: 0x5E574B
     }

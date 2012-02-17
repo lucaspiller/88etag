@@ -1,7 +1,7 @@
 class Starfield
   PARTICLE_COUNT = 100
   NEAR = 1
-  FAR = 50
+  FAR = 500
 
   constructor: (@controller) ->
     # find max range of screen
