@@ -9,3 +9,9 @@ class Player extends Movable
       color: 0x5E574B
     }
     new THREE.Mesh geometry, material
+
+class LocalPlayer extends Player
+  step: ->
+    super
+    @controller.camera.position.x = @position.x
+    @controller.camera.position.y = @position.y

@@ -62,7 +62,7 @@ class Universe
     @buildPlayer()
 
   buildPlayer: ->
-    @player = new Player @controller
+    @player = new LocalPlayer @controller
 
   step: ->
     @player.step()
