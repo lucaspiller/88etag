@@ -54,6 +54,7 @@ class Controller
   render: ->
     requestAnimationFrame (=> @render())
 
+    @universe.checkCollisions()
     @universe.step()
 
     @light.position.set @camera.position.x, @camera.position.y, CAMERA_Z * 10
@@ -64,6 +65,7 @@ class Controller
 class Universe
   constructor: (@controller) ->
     @starfield = new Starfield @controller
+    @masses = []
     @buildPlayer()
     @bindKeys()
 
@@ -83,8 +85,14 @@ class Universe
       @keys = _.without @keys, e.which
 
   step: ->
-    @starfield.step()
-    @player.step()
+    mass.step() for mass in @masses
+
+  checkCollisions: ->
+    for m1 in @masses
+      for m2 in @masses
+        if m1.mass < m2.mass
+          if m1.overlaps m2
+            m1.handleCollision m2
 
 class Movable
   constructor: (options) ->
@@ -99,6 +107,8 @@ class Movable
     @rotationalVelocity = 0
     @rotation = 0
 
+    @universe.masses.push this
+
   buildMesh: ->
     geometry = new THREE.CubeGeometry 10, 10, 10
     material = new THREE.MeshLambertMaterial {
@@ -108,10 +118,55 @@ class Movable
     new THREE.Mesh geometry, material
 
   step: ->
+    # magical force to stop large objects
+    if @mass >= 1000
+      @velocity.multiplyScalar(0.99)
     @position.addSelf @velocity
     if Math.abs(@rotationalVelocity) > 0
       @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
       @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
+
+  overlaps: (other) ->
+    return false if other == this
+    diff = @position.clone().subSelf(other.position).length()
+    diff < (other.radius + @radius)
+
+  handleCollision: (other) ->
+    x = @position.clone().subSelf(other.position).normalize()
+    v1 = @velocity.clone()
+    x1 = x.dot(v1)
+    v1x = x.clone().multiplyScalar(x1)
+    v1y = v1.clone().subSelf(v1x)
+    m1 = @mass
+
+    x = x.multiplyScalar(-1)
+    v2 = other.velocity.clone()
+    x2 = x.dot(v2)
+    v2x = x.clone().multiplyScalar(x2)
+    v2y = v2.clone().subSelf(v2x)
+    m2 = other.mass
+
+    @velocity = v1x.clone().multiplyScalar((m1 - m2) / (m1 + m2)).addSelf(v2x.multiplyScalar((2 * m2) / (m1 + m2)).addSelf(v1y)).multiplyScalar(0.75)
+    @acceleration = new THREE.Vector3 0, 0, 0
+
+    if other.mass < 1000
+      other.velocity = v1x.clone().multiplyScalar((2 * m1) / (m1 + m2)).addSelf(v2x.multiplyScalar((m2 - m1) / (m1 + m2)).addSelf(v2y)).multiplyScalar(0.75)
+      other.acceleration = new THREE.Vector3 0, 0, 0
+
+    # check that both velocities aren't zero, if so set the
+    # velocity of the object with the smallest mass to be the normal
+    if @velocity.length() == 0 and other.velocity.length() == 0
+      if m1 < m2
+        @velocity = x.clone().multiplyScalar -1
+      else
+        other.velocity = x.clone().multiplyScalar 1
+
+    # make sure the objects are no longer touching,
+    # otherwise hack away until they aren't
+    while @overlaps other
+      @position.addSelf(@velocity)
+      other.position.addSelf(other.velocity)
+
 
 $(document).ready ->
     unless Detector.webgl

@@ -1,10 +1,17 @@
 class Player extends Movable
   constructor: (options) ->
     super options
-    @max_speed = 5
-    @max_accel = 0.1
     @acceleration = new THREE.Vector3 0, 0, 0
     @commandCentre = new CommandCentre options
+    @position.y = @commandCentre.position.y - @commandCentre.radius
+
+    @rotation = Math.PI * 1.5
+    @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
+
+    @max_speed = 5
+    @max_accel = 0.1
+    @radius = 30
+    @mass = 1
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 30, 10, 10
@@ -71,6 +78,9 @@ class CommandCentre extends Movable
   constructor: (options) ->
     super options
     @rotationalVelocity = Math.PI / 512
+
+    @radius = 38
+    @mass = 999999999999999999
 
   buildMesh: ->
     geometry = new THREE.TorusGeometry 50, 3, 40, 40, Math.PI * 2
