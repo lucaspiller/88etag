@@ -75,7 +75,10 @@ class Universe
     @bindKeys()
 
   buildPlayer: ->
-    @player = new LocalPlayer @controller
+    @player = new LocalPlayer {
+      controller: @controller,
+      universe: this
+    }
 
   bindKeys: ->
     @keys = []
@@ -91,11 +94,15 @@ class Universe
     @player.step()
 
 class Movable
-  constructor: (@controller) ->
+  constructor: (options) ->
+    @controller = options.controller
+    @universe = options.universe
+
     @mesh = @buildMesh()
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
     @position = @mesh.position = new THREE.Vector3 0, 0, 90
     @controller.scene.add @mesh
+    @rotationalVelocity = 0
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 1, 1, 1
@@ -106,6 +113,9 @@ class Movable
 
   step: ->
     @position.addSelf @velocity
+    if Math.abs(@rotationalVelocity) > 0
+      @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
+      @mesh.rotation.z += @rotationalVelocity
 
 $(document).ready ->
     unless Detector.webgl
