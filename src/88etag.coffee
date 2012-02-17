@@ -104,6 +104,7 @@ class Movable
     @position = @mesh.position = new THREE.Vector3 0, 0, 90
     @controller.scene.add @mesh
     @rotationalVelocity = 0
+    @rotation = 0
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 1, 1, 1
@@ -116,6 +117,7 @@ class Movable
     @position.addSelf @velocity
     if Math.abs(@rotationalVelocity) > 0
       @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
+      @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
 
 $(document).ready ->
     unless Detector.webgl
