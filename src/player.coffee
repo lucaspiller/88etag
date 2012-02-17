@@ -10,11 +10,11 @@ class Player extends Movable
 
     @max_speed = 2
     @max_accel = 0.05
-    @radius = 30
+    @radius = 20
     @mass = 1
 
   buildMesh: ->
-    geometry = new THREE.CubeGeometry 30, 10, 10
+    geometry = new THREE.CubeGeometry 20, 15, 15
     material = new THREE.MeshLambertMaterial {
       ambient: 0x5E574B
       color: 0x5E574B
