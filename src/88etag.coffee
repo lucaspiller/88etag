@@ -67,6 +67,20 @@ class Universe
   buildPlayer: ->
     new Player @controller
 
+class Movable
+  constructor: (@controller) ->
+    @mesh = @buildMesh()
+    @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
+    @position = @mesh.position = new THREE.Vector3 0, 0, 90
+    @controller.scene.add @mesh
+
+  buildMesh: ->
+    geometry = new THREE.CubeGeometry 1, 1, 1
+    material = new THREE.MeshLambertMaterial {
+      color: 0xFF0000
+    }
+    new THREE.Mesh geometry, material
+
 $(document).ready ->
     unless Detector.webgl
       Detector.addGetWebGLMessage()

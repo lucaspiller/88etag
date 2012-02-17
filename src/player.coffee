@@ -1,9 +1,7 @@
-class Player
-  constructor: (@controller) ->
-    geometry = new THREE.TorusGeometry(1, 0.42, 16, 16)
-    material = new THREE.MeshLambertMaterial {
-      color: 0xCC0000
+class Player extends Movable
+  buildMesh: ->
+    geometry = new THREE.CubeGeometry 1, 3, 1
+    material = new THREE.MeshBasicMaterial {
+      color: 0x5E574B
     }
-    @mesh = new THREE.Mesh geometry, material
-    @mesh.position.set(0, 0, 90)
-    @controller.scene.add @mesh
+    new THREE.Mesh geometry, material
