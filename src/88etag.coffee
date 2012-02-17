@@ -95,22 +95,28 @@ class Universe
 
   checkCollisions: ->
     for m1 in @masses
-      for m2 in @masses
-        if m1.mass < m2.mass
-          if m1.overlaps m2
+      if m1.solid
+        for m2 in @masses
+          if m2.solid and m1.mass < m2.mass and m1.overlaps m2
             m1.handleCollision m2
+    true
 
 class Movable
+  mass: 1
+  solid: true
+  radius: 10
+  rotationalVelocity: 0
+
   constructor: (options) ->
     @controller = options.controller
     @universe = options.universe
 
     @mesh = @buildMesh()
     @mesh.rotateAboutWorldAxis THREE.AxisZ, 0.001 # hack to fix a bug in ThreeJS?
+    @controller.scene.add @mesh
+
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
     @position = @mesh.position = new THREE.Vector3 0, 0, 500
-    @controller.scene.add @mesh
-    @rotationalVelocity = 0
     @rotation = 0
 
     @universe.masses.push this
@@ -174,6 +180,8 @@ class Movable
       other.position.addSelf(other.velocity)
 
 class ShipTrail extends Movable
+  solid: false
+
   constructor: (options) ->
     super options
 
