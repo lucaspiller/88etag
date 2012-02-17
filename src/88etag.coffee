@@ -176,11 +176,15 @@ class ShipTrail extends Movable
   constructor: (options) ->
     super options
 
+  buildMesh: ->
+    geometry = new THREE.SphereGeometry 1
+    material = new THREE.MeshBasicMaterial
+    new THREE.Mesh geometry, material
+
   setup: (position, velocity) ->
     @position.set position.x, position.y, position.z - 10
-    @velocity.set Math.random() - 0.5, Math.random() - 0.5, 0
+    @velocity.set (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4, 0
     @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
-    @mesh.material.ambient.setRGB(0, 0, 0)
     @lifetime = 40
     @alive = true
 
@@ -193,9 +197,7 @@ class ShipTrail extends Movable
     if @alive
       if @lifetime > 0
         @position.addSelf @velocity
-        @mesh.material.color.r -= (1 / 30)
-        @mesh.material.color.g -= (1 / 30)
-        @mesh.material.color.b -= (1 / 30)
+        @mesh.material.opacity = @lifetime / 30
         @lifetime--
       else
         @remove()
@@ -210,13 +212,14 @@ class TrailsContainer
     @pool.push trail
 
   newShipTrail: (parent) ->
-    trail = @pool.pop()
-    unless trail
-      trail = new ShipTrail {
-        controller: @controller
-        universe: @universe
-      }
-    trail.setup parent.position, parent.velocity
+    for i in [1..2]
+      trail = @pool.pop()
+      unless trail
+        trail = new ShipTrail {
+          controller: @controller
+          universe: @universe
+        }
+      trail.setup parent.position, parent.velocity
 
 $(document).ready ->
     unless Detector.webgl

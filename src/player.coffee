@@ -8,8 +8,8 @@ class Player extends Movable
     @rotation = Math.PI * 1.5
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
 
-    @max_speed = 5
-    @max_accel = 0.1
+    @max_speed = 2
+    @max_accel = 0.05
     @radius = 30
     @mass = 1
 
