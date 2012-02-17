@@ -5,10 +5,12 @@ class Player extends Movable
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 1, 3, 1
-    material = new THREE.MeshBasicMaterial {
+    material = new THREE.MeshLambertMaterial {
       color: 0x5E574B
     }
-    new THREE.Mesh geometry, material
+    mesh = new THREE.Mesh geometry, material
+    mesh.rotation.set Math.PI / 16, Math.PI / 4, 0
+    mesh
 
 class LocalPlayer extends Player
   step: ->
