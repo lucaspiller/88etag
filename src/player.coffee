@@ -1,17 +1,13 @@
 class Player extends Movable
   constructor: (controller) ->
     super controller
-    @velocity.set Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, 0
-    @rotationalVelocity = 0
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 1, 3, 1
     material = new THREE.MeshLambertMaterial {
       color: 0x5E574B
     }
-    mesh = new THREE.Mesh geometry, material
-    mesh.rotation.set Math.PI / 16, Math.PI / 4, 0
-    mesh
+    new THREE.Mesh geometry, material
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64
@@ -24,6 +20,7 @@ class Player extends Movable
       @rotationalVelocity *= 0.9
     else
       @rotationalVelocity = 0
+    @mesh.rotateAboutObjectAxis(THREE.AxisY, Math.PI / 128)
     super
 
 class LocalPlayer extends Player

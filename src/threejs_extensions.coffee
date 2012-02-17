@@ -10,3 +10,7 @@ THREE.Mesh.prototype.rotateAboutWorldAxis = (axis, radians) ->
   rotationMatrix.multiplySelf @matrix
   @matrix = rotationMatrix
   @rotation.setRotationFromMatrix @matrix
+
+THREE.AxisX = new THREE.Vector3(1, 0, 0)
+THREE.AxisY = new THREE.Vector3(0, 1, 0)
+THREE.AxisZ = new THREE.Vector3(0, 0, 1)

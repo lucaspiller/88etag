@@ -99,6 +99,7 @@ class Movable
     @universe = options.universe
 
     @mesh = @buildMesh()
+    @mesh.rotateAboutWorldAxis THREE.AxisZ, 0.001 # hack to fix a bug in ThreeJS?
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
     @position = @mesh.position = new THREE.Vector3 0, 0, 90
     @controller.scene.add @mesh
@@ -114,8 +115,7 @@ class Movable
   step: ->
     @position.addSelf @velocity
     if Math.abs(@rotationalVelocity) > 0
-      @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
-      @mesh.rotation.z += @rotationalVelocity
+      @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
 
 $(document).ready ->
     unless Detector.webgl
