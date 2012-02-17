@@ -1,9 +1,10 @@
 class Player extends Movable
-  constructor: (controller) ->
-    super controller
+  constructor: (options) ->
+    super options
     @max_speed = 5
     @max_accel = 0.1
     @acceleration = new THREE.Vector3 0, 0, 0
+    @commandCentre = new CommandCentre options
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 30, 10, 10
@@ -34,6 +35,8 @@ class Player extends Movable
       @acceleration.multiplyScalar @max_accel / accel
 
   step: ->
+    @commandCentre.step()
+
     @velocity.addSelf @acceleration
     @acceleration.multiplyScalar 0
     speed = @velocity.length()
@@ -63,3 +66,16 @@ class LocalPlayer extends Player
     super
     @controller.camera.position.x = @position.x
     @controller.camera.position.y = @position.y
+
+class CommandCentre extends Movable
+  constructor: (options) ->
+    super options
+    @rotationalVelocity = Math.PI / 512
+
+  buildMesh: ->
+    geometry = new THREE.TorusGeometry 50, 3, 40, 40, Math.PI * 2
+    material = new THREE.MeshLambertMaterial {
+      ambient: 0x606162
+      color: 0x606162
+    }
+    new THREE.Mesh geometry, material

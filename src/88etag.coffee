@@ -100,7 +100,7 @@ class Movable
     @rotation = 0
 
   buildMesh: ->
-    geometry = new THREE.CubeGeometry 1, 1, 1
+    geometry = new THREE.CubeGeometry 10, 10, 10
     material = new THREE.MeshLambertMaterial {
       ambient: 0xFF0000
       color: 0xFF0000
