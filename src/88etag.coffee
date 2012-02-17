@@ -7,7 +7,7 @@ class Controller
   constructor: (@container) ->
     @setupRenderer()
     @setupScene()
-    new Universe this
+    @universe = new Universe this
     @render()
 
   width: ->
@@ -53,19 +53,19 @@ class Controller
 
   render: ->
     requestAnimationFrame (=> @render())
-    @_render()
-    if @stats
-      @stats.update()
-
-  _render: ->
+    @universe.step()
     @renderer.render @scene, @camera
+    @stats.update() if @stats
 
 class Universe
   constructor: (@controller) ->
     @buildPlayer()
 
   buildPlayer: ->
-    new Player @controller
+    @player = new Player @controller
+
+  step: ->
+    @player.step()
 
 class Movable
   constructor: (@controller) ->
@@ -80,6 +80,9 @@ class Movable
       color: 0xFF0000
     }
     new THREE.Mesh geometry, material
+
+  step: ->
+    @position.addSelf @velocity
 
 $(document).ready ->
     unless Detector.webgl
