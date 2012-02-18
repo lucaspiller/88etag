@@ -86,6 +86,10 @@ class Universe
       controller: @controller,
       universe: this
     }
+    @bullets = new BulletsStorage {
+      controller: @controller,
+      universe: this
+    }
     @masses = []
     @buildPlayer()
     @bindKeys()

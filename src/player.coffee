@@ -13,6 +13,7 @@ class Player extends Movable
 
     @rotation = Math.PI * 1.5
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
+    @bulletDelay = 0
 
   buildMesh: ->
     material = new THREE.MeshLambertMaterial {
@@ -45,8 +46,15 @@ class Player extends Movable
     @universe.trails.newShipTrail this
     @mesh.rotateAboutObjectAxis(THREE.AxisX, -Math.PI / 128)
 
+  fire: ->
+    if @bulletDelay <= 0
+      @universe.bullets.newShipBullet this
+      @bulletDelay = 10
+
   step: ->
     @commandCentre.step()
+
+    @bulletDelay--
 
     @velocity.addSelf @acceleration
     @acceleration.multiplyScalar 0
@@ -72,6 +80,8 @@ class LocalPlayer extends Player
           @forward()
         when 40 # down
           @backward()
+        when 68 # d
+          @fire()
 
     super
     @controller.camera.position.x = @position.x
