@@ -116,17 +116,16 @@ class Universe
 
   checkCollisions: ->
     for m1 in @masses
-      if m1.solid
-        for m2 in @masses
-          if m2.solid and m1.mass < m2.mass and m1.overlaps m2
-            m1.handleCollision m2
+      for m2 in @masses
+        if m2.solid and m1.mass < m2.mass and m1.overlaps m2
+          m1.handleCollision m2
     true
 
 class HealthBall
   constructor: (options) ->
     @controller = options.controller
     @position = options.position
-    @healthMax = options.healthMax
+    @maxHealth = options.maxHealth
     @radius = options.radius
 
     @buildMeshes()
@@ -148,13 +147,17 @@ class HealthBall
     @innerMesh.rotateAboutWorldAxis(THREE.AxisX, Math.PI / 2)
     @controller.scene.add @innerMesh
 
+  remove: ->
+    @controller.scene.remove @innerMesh
+    @controller.scene.remove @outerMesh
+
   update: (position, health) ->
     @outerMesh.position.set(position.x, position.y, position.z - 0.2)
     @innerMesh.position.set(position.x, position.y, position.z - 0.1)
-    @innerMesh.scale.set(health / @healthMax, health / @healthMax, 1)
+    @innerMesh.scale.set(health / @maxHealth, health / @maxHealth, health / @maxHealth)
 
 class Movable
-  healthMax: 100
+  maxHealth: 100
   healthRadius: 10
   mass: 1
   solid: true
@@ -172,7 +175,7 @@ class Movable
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
     @position = @mesh.position = new THREE.Vector3 0, 0, 500
     @rotation = 0
-    @health = @healthMax
+    @health = @maxHealth
 
     @universe.masses.push this
 
@@ -180,7 +183,7 @@ class Movable
       @healthBall = new HealthBall {
         controller: @controller
         position: @position
-        healthMax: @healthMax
+        maxHealth: @maxHealth
         radius: @healthRadius
       }
 
@@ -191,6 +194,15 @@ class Movable
       color: 0xFF0000
     }
     new THREE.Mesh geometry, material
+
+  explode: ->
+    @remove()
+
+  remove: ->
+    @controller.scene.remove @mesh
+    @universe.masses = _.without @universe.masses, this
+    if @solid
+      @healthBall.remove()
 
   step: ->
     # magical force to stop large objects

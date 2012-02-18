@@ -15,10 +15,13 @@ class BulletsStorage
           controller: @controller
           universe: @universe
         }
-      bullet.setup parent.position, parent.rotation
+      bullet.setup parent
 
 class ShipBullet extends Movable
   solid: false
+  damage: 100
+  radius: 5
+  mass: 0
 
   constructor: (options) ->
     super options
@@ -28,10 +31,10 @@ class ShipBullet extends Movable
     material = new THREE.MeshBasicMaterial
     new THREE.Mesh geometry, material
 
-  setup: (position, rotation) ->
-    @position.set position.x, position.y, position.z - 10
-    @velocity.x = Math.cos rotation
-    @velocity.y = Math.sin rotation
+  setup: (@parent) ->
+    @position.set @parent.position.x, @parent.position.y, @parent.position.z - 10
+    @velocity.x = Math.cos @parent.rotation
+    @velocity.y = Math.sin @parent.rotation
     @velocity.multiplyScalar 6
     @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
     @lifetime = 100
@@ -49,3 +52,12 @@ class ShipBullet extends Movable
         @lifetime--
       else
         @remove()
+
+  handleCollision: (other) ->
+    return unless other.solid
+    return if other == @parent
+    other.health -= @damage
+    if other.health <= 0
+      other.explode()
+    @remove()
+
