@@ -1,7 +1,7 @@
 class Player extends Movable
   healthRadius: 8
   maxHealth: 100
-  radius: 20
+  radius: 10
   mass: 1
   max_speed: 2
   max_accel: 0.05
@@ -10,7 +10,7 @@ class Player extends Movable
     super options
     @acceleration = new THREE.Vector3 0, 0, 0
     @commandCentre = new CommandCentre options
-    @position.y = @commandCentre.position.y - @commandCentre.radius
+    @position.y = @commandCentre.position.y - @commandCentre.radius - 10
 
     @rotation = Math.PI * 1.5
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
@@ -88,20 +88,47 @@ class LocalPlayer extends Player
     @controller.camera.position.x = @position.x
     @controller.camera.position.y = @position.y
 
+class CommandCentreInner
+  rotationalVelocity: -Math.PI / 512
+
+  constructor: (options) ->
+    @controller = options.controller
+    @universe = options.universe
+
+    @mesh = @buildMesh()
+    @position = @mesh.position = new THREE.Vector3 0, 0, 500
+    @controller.scene.add @mesh
+
+  remove: ->
+    @controller.scene.remove @mesh
+
+  buildMesh: ->
+    material = new THREE.MeshFaceMaterial
+    new THREE.Mesh @controller.geometries['models/command_centre_inner.js'], material
+
+  step: ->
+    @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
+
 class CommandCentre extends Movable
   mass: 999999999999999999
   healthRadius: 40
   maxHealth: 10000
-  radius: 45
+  radius: 80
   rotationalVelocity: Math.PI / 512
 
   constructor: (options) ->
+    @inner = new CommandCentreInner options
     super options
 
   buildMesh: ->
-    geometry = new THREE.TorusGeometry 50, 3, 40, 40, Math.PI * 2
-    material = new THREE.MeshLambertMaterial {
-      ambient: 0x606162
-      color: 0x606162
-    }
-    new THREE.Mesh geometry, material
+    material = new THREE.MeshFaceMaterial
+    new THREE.Mesh @controller.geometries['models/command_centre.js'], material
+
+  remove: ->
+    super
+    @inner.remove()
+
+  step: ->
+    super
+    @inner.position.set @position.x, @position.y, @position.z
+    @inner.step()

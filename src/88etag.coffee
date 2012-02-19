@@ -5,7 +5,9 @@ class Controller
   CAMERA_Z = 1000
 
   models: [
-    'models/ship_basic.js'
+    'models/ship_basic.js',
+    'models/command_centre.js',
+    'models/command_centre_inner.js'
   ]
 
   constructor: (@container) ->
@@ -58,11 +60,15 @@ class Controller
     @geometries = {}
     loader = new THREE.JSONLoader()
     for model in @models
-      loader.load model, (geometry) =>
-        geometry.computeVertexNormals()
-        @geometries[model] = geometry
-        if _.size(@geometries) == _.size(@models)
-          @continueLoad()
+      @loadModel loader, model
+
+  loadModel: (loader, model) ->
+    loader.load model, (geometry) =>
+      console.log model, geometry
+      geometry.computeVertexNormals()
+      @geometries[model] = geometry
+      if _.size(@geometries) == _.size(@models)
+        @continueLoad()
 
   continueLoad: ->
     @universe = new Universe this
