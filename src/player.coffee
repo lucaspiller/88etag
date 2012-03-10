@@ -111,9 +111,9 @@ class CommandCentreInner
 
 class CommandCentre extends Movable
   mass: 999999999999999999
-  healthRadius: 40
+  healthRadius: 25
   maxHealth: 10000
-  radius: 80
+  radius: 50
   rotationalVelocity: Math.PI / 512
 
   constructor: (options) ->
