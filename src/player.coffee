@@ -162,9 +162,20 @@ class LocalPlayer extends Player
             @ship.backward()
           when 68 # d
             @ship.fire()
+          when 81 # q
+            @buildTurret()
+            @universe.keys = _.without @universe.keys, 81 # TODO hack
 
       @controller.camera.position.x = @ship.position.x
       @controller.camera.position.y = @ship.position.y
+
+  buildTurret: ->
+    turret = new Turret {
+      universe: @universe,
+      controller: @controller,
+      position: @ship.position.clone(),
+      parent: this
+    }
 
 class AiPlayer extends Player
   AI_STEP_INTERVAL = 5
