@@ -234,10 +234,18 @@ class Movable
 
   overlaps: (other) ->
     return false if other == this
-    diff = @position.clone().subSelf(other.position).length()
-    diff < (other.radius + @radius)
+    x = @position.x - other.position.x
+    y = @position.y - other.position.y
+    max = (other.radius + @radius)
+    if x < max && y < max
+      diff = Math.sqrt( x * x + y * y )
+      diff < max
+    else
+      false
 
   handleCollision: (other) ->
+    return unless @solid and other.solid
+
     x = @position.clone().subSelf(other.position).normalize()
     v1 = @velocity.clone()
     x1 = x.dot(v1)
