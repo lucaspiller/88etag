@@ -182,19 +182,21 @@ class AiPlayer extends Player
     @angle = 0
 
   step: ->
-    if @aiStepCounter <= 0
-      @aiStep()
-      @aiStepCounter = AI_STEP_INTERVAL
-    else
-      @aiStepCounter--
+    super
+    if @ship
+      if @aiStepCounter <= 0
+        @aiStep()
+        @aiStepCounter = AI_STEP_INTERVAL
+      else
+        @aiStepCounter--
 
-    if Math.abs(@ship.rotation - @angle) > ROTATE_ANGLE_DIFF_MAX
-      if @ship.rotation > @angle
-        @ship.rotateRight()
-      else if @ship.rotation < @angle
-        @ship.rotateLeft()
-    @ship.forward()
-    @ship.fire() if @fire
+        if Math.abs(@ship.rotation - @angle) > ROTATE_ANGLE_DIFF_MAX
+          if @ship.rotation > @angle
+            @ship.rotateRight()
+          else if @ship.rotation < @angle
+            @ship.rotateLeft()
+        @ship.forward()
+        @ship.fire() if @fire
 
   aiStep: ->
     @chooseTarget() unless @target
