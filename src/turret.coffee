@@ -1,15 +1,38 @@
+class TurretBase
+  constructor: (options) ->
+    @controller = options.controller
+    @universe = options.universe
+
+    @mesh = @buildMesh()
+    @position = @mesh.position = new THREE.Vector3 0, 0, 500
+    if options.position
+      @position.x = @mesh.position.x = options.position.x
+      @position.y = @mesh.position.y = options.position.y
+    @controller.scene.add @mesh
+
+  remove: ->
+    @controller.scene.remove @mesh
+
+  buildMesh: ->
+    material = new THREE.MeshFaceMaterial
+    geometry = @controller.geometries['models/turret_base.js']
+    for material in geometry.materials
+      material.shading = THREE.FlatShading
+    new THREE.Mesh geometry, material
+
 class Turret extends Movable
   AI_STEP_INTERVAL = 60
   ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
   FIRE_ANGLE_DIFF_MAX = Math.PI / 8
   FIRE_MAX_DISTANCE = 1000
 
-  radius: 10
+  radius: 20
   healthRadius: 8
   mass: 1000
   maxHealth: 1000
 
   constructor: (options) ->
+    @base = new TurretBase options
     super options
     @parent = options.parent
     @position.x = options.position.x
@@ -19,11 +42,11 @@ class Turret extends Movable
     @bulletDelay = 0
 
   buildMesh: ->
-    material = new THREE.MeshLambertMaterial {
-      ambient: 0x5E574B
-      color: 0x5E574B
-    }
-    new THREE.Mesh @controller.geometries['models/ship_basic.js'], material # TODO change to proper mesh
+    material = new THREE.MeshFaceMaterial
+    geometry = @controller.geometries['models/turret.js']
+    for material in geometry.materials
+      material.shading = THREE.FlatShading
+    new THREE.Mesh geometry, material
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64
@@ -33,6 +56,10 @@ class Turret extends Movable
 
   rotateStop: ->
     @rotationalVelocity = 0
+
+  remove: ->
+    super
+    @base.remove()
 
   step: ->
     super
@@ -52,6 +79,8 @@ class Turret extends Movable
 
     @bulletDelay--
     @fire() if @shouldFire
+
+    @base.position.set @position.x, @position.y, @position.z
 
   fire: ->
     if @bulletDelay <= 0

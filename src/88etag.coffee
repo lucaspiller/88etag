@@ -7,7 +7,9 @@ class Controller
   models: [
     'models/ship_basic.js',
     'models/command_centre.js',
-    'models/command_centre_inner.js'
+    'models/command_centre_inner.js',
+    'models/turret.js'
+    'models/turret_base.js'
   ]
 
   constructor: (@container) ->
