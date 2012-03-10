@@ -64,7 +64,6 @@ class Controller
 
   loadModel: (loader, model) ->
     loader.load model, (geometry) =>
-      console.log model, geometry
       geometry.computeVertexNormals()
       @geometries[model] = geometry
       if _.size(@geometries) == _.size(@models)
@@ -97,6 +96,7 @@ class Universe
       universe: this
     }
     @masses = []
+    @players = []
     @buildPlayer()
     @bindKeys()
 
@@ -105,6 +105,7 @@ class Universe
       controller: @controller,
       universe: this
     }
+    @players.push @player
 
   bindKeys: ->
     @keys = []
@@ -119,6 +120,7 @@ class Universe
   step: ->
     @starfield.step()
     mass.step() for mass in @masses
+    player.step() for player in @players
 
   checkCollisions: ->
     for m1 in @masses

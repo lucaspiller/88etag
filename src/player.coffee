@@ -1,4 +1,4 @@
-class Player extends Movable
+class PlayerShip extends Movable
   healthRadius: 8
   maxHealth: 100
   radius: 10
@@ -69,24 +69,33 @@ class Player extends Movable
       @rotationalVelocity = 0
     super
 
+class Player
+  constructor: (options) ->
+    @universe = options.universe
+    @controller = options.controller
+    @ship = new PlayerShip options
+
+  step: ->
+    true
+
 class LocalPlayer extends Player
   step: ->
     for key in @universe.keys
       switch key
         when 37 # left
-          @rotateLeft()
+          @ship.rotateLeft()
         when 39 # right
-          @rotateRight()
+          @ship.rotateRight()
         when 38 # up
-          @forward()
+          @ship.forward()
         when 40 # down
-          @backward()
+          @ship.backward()
         when 68 # d
-          @fire()
+          @ship.fire()
 
     super
-    @controller.camera.position.x = @position.x
-    @controller.camera.position.y = @position.y
+    @controller.camera.position.x = @ship.position.x
+    @controller.camera.position.y = @ship.position.y
 
 class CommandCentreInner
   rotationalVelocity: -Math.PI / 512
