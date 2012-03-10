@@ -69,43 +69,6 @@ class PlayerShip extends Movable
       @rotationalVelocity = 0
     super
 
-class Player
-  constructor: (options) ->
-    @universe = options.universe
-    @controller = options.controller
-    @ship = new PlayerShip options
-
-  step: ->
-    true
-
-class LocalPlayer extends Player
-  step: ->
-    for key in @universe.keys
-      switch key
-        when 37 # left
-          @ship.rotateLeft()
-        when 39 # right
-          @ship.rotateRight()
-        when 38 # up
-          @ship.forward()
-        when 40 # down
-          @ship.backward()
-        when 68 # d
-          @ship.fire()
-
-    super
-    @controller.camera.position.x = @ship.position.x
-    @controller.camera.position.y = @ship.position.y
-
-class AiPlayer extends Player
-  constructor: (options) ->
-    options.position = new THREE.Vector3 0, 0, 0
-    options.position.x = -250 #(Math.random() * 1000) - 500
-    options.position.y = -250 #(Math.random() * 1000) - 500
-    super options
-
-    console.log options.position.x, options.position.y
-
 class CommandCentreInner
   rotationalVelocity: -Math.PI / 512
 
@@ -157,3 +120,38 @@ class CommandCentre extends Movable
     super
     @inner.position.set @position.x, @position.y, @position.z
     @inner.step()
+
+class Player
+  constructor: (options) ->
+    @universe = options.universe
+    @controller = options.controller
+    @ship = new PlayerShip options
+
+  step: ->
+    true
+
+class LocalPlayer extends Player
+  step: ->
+    for key in @universe.keys
+      switch key
+        when 37 # left
+          @ship.rotateLeft()
+        when 39 # right
+          @ship.rotateRight()
+        when 38 # up
+          @ship.forward()
+        when 40 # down
+          @ship.backward()
+        when 68 # d
+          @ship.fire()
+
+    super
+    @controller.camera.position.x = @ship.position.x
+    @controller.camera.position.y = @ship.position.y
+
+class AiPlayer extends Player
+  constructor: (options) ->
+    options.position = new THREE.Vector3 0, 0, 0
+    options.position.x = -250 #(Math.random() * 1000) - 500
+    options.position.y = -250 #(Math.random() * 1000) - 500
+    super options
