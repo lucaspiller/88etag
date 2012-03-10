@@ -157,8 +157,8 @@ class AiPlayer extends Player
 
   constructor: (options) ->
     options.position = new THREE.Vector3 0, 0, 0
-    options.position.x = -250 #(Math.random() * 1000) - 500
-    options.position.y = -250 #(Math.random() * 1000) - 500
+    options.position.x = (Math.random() * 10000) - 5000
+    options.position.y = (Math.random() * 10000) - 5000
     super options
 
     @aiStepCounter = 0
