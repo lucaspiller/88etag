@@ -1,8 +1,8 @@
 class PlayerShip extends Movable
   healthRadius: 8
-  maxHealth: 100
+  maxHealth: 1000
   radius: 10
-  mass: 1
+  mass: 10
   max_speed: 2
   max_accel: 0.05
 
@@ -97,6 +97,15 @@ class LocalPlayer extends Player
     @controller.camera.position.x = @ship.position.x
     @controller.camera.position.y = @ship.position.y
 
+class AiPlayer extends Player
+  constructor: (options) ->
+    options.position = new THREE.Vector3 0, 0, 0
+    options.position.x = -250 #(Math.random() * 1000) - 500
+    options.position.y = -250 #(Math.random() * 1000) - 500
+    super options
+
+    console.log options.position.x, options.position.y
+
 class CommandCentreInner
   rotationalVelocity: -Math.PI / 512
 
@@ -106,6 +115,9 @@ class CommandCentreInner
 
     @mesh = @buildMesh()
     @position = @mesh.position = new THREE.Vector3 0, 0, 500
+    if options.position
+      @position.x = @mesh.position.x = options.position.x
+      @position.y = @mesh.position.y = options.position.y
     @controller.scene.add @mesh
 
   remove: ->
@@ -128,6 +140,10 @@ class CommandCentre extends Movable
   constructor: (options) ->
     @inner = new CommandCentreInner options
     super options
+
+    if options.position
+      @position.x = @mesh.position.x = options.position.x
+      @position.y = @mesh.position.y = options.position.y
 
   buildMesh: ->
     material = new THREE.MeshFaceMaterial

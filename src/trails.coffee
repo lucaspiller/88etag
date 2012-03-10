@@ -48,3 +48,6 @@ class ShipTrail extends Movable
         @lifetime--
       else
         @remove()
+
+  handleCollision: (other) ->
+    true

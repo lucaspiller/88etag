@@ -107,6 +107,12 @@ class Universe
     }
     @players.push @player
 
+    ai = new AiPlayer {
+      controller: @controller,
+      universe: this
+    }
+    @players.push ai
+
   bindKeys: ->
     @keys = []
 
@@ -125,7 +131,7 @@ class Universe
   checkCollisions: ->
     for m1 in @masses
       for m2 in @masses
-        if m2.solid and m1.mass < m2.mass and m1.overlaps m2
+        if m1.mass <= m2.mass and m1.overlaps m2
           m1.handleCollision m2
     true
 
