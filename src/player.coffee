@@ -8,9 +8,9 @@ class PlayerShip extends Movable
 
   constructor: (options) ->
     super options
+    @parent = options.parent
     @acceleration = new THREE.Vector3 0, 0, 0
-    @commandCentre = new CommandCentre options
-    @position.y = @commandCentre.position.y - @commandCentre.radius - 10
+    @position.y = @parent.commandCentre.position.y - @parent.commandCentre.radius - 10
 
     @rotation = Math.PI * 1.5
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
@@ -53,8 +53,6 @@ class PlayerShip extends Movable
       @bulletDelay = 10
 
   step: ->
-    @commandCentre.step()
-
     @bulletDelay--
 
     @velocity.addSelf @acceleration
@@ -68,6 +66,10 @@ class PlayerShip extends Movable
     else
       @rotationalVelocity = 0
     super
+
+  explode: ->
+    super
+    @parent.respawn()
 
 class CommandCentreInner
   rotationalVelocity: -Math.PI / 512
@@ -122,32 +124,47 @@ class CommandCentre extends Movable
     @inner.step()
 
 class Player
-  constructor: (options) ->
+  constructor: (@options) ->
+    options.parent = this
     @universe = options.universe
     @controller = options.controller
-    @ship = new PlayerShip options
+    @commandCentre = new CommandCentre options
+    @buildShip()
+
+  buildShip: ->
+    @ship = new PlayerShip @options
 
   step: ->
     true
+    unless @ship
+      if @respawnDelay <= 0
+        @buildShip()
+      else
+        @respawnDelay--
+
+  respawn: ->
+    @ship = false
+    @respawnDelay = 300
 
 class LocalPlayer extends Player
   step: ->
-    for key in @universe.keys
-      switch key
-        when 37 # left
-          @ship.rotateLeft()
-        when 39 # right
-          @ship.rotateRight()
-        when 38 # up
-          @ship.forward()
-        when 40 # down
-          @ship.backward()
-        when 68 # d
-          @ship.fire()
-
     super
-    @controller.camera.position.x = @ship.position.x
-    @controller.camera.position.y = @ship.position.y
+    if @ship
+      for key in @universe.keys
+        switch key
+          when 37 # left
+            @ship.rotateLeft()
+          when 39 # right
+            @ship.rotateRight()
+          when 38 # up
+            @ship.forward()
+          when 40 # down
+            @ship.backward()
+          when 68 # d
+            @ship.fire()
+
+      @controller.camera.position.x = @ship.position.x
+      @controller.camera.position.y = @ship.position.y
 
 class AiPlayer extends Player
   AI_STEP_INTERVAL = 5
@@ -181,9 +198,12 @@ class AiPlayer extends Player
 
   aiStep: ->
     @chooseTarget() unless @target
-    vector = @target.ship.position.clone().subSelf @ship.position
-    @angle = Math.atan2(vector.y, vector.x)
-    @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
+    if @target && @target.ship
+      vector = @target.ship.position.clone().subSelf @ship.position
+      @angle = Math.atan2(vector.y, vector.x)
+      @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
+    else
+      @fire = false
 
   chooseTarget: ->
     for player in @universe.players
