@@ -29,7 +29,7 @@ class Turret extends Movable
 
   radius: 20
   healthRadius: 8
-  mass: 1000
+  mass: 50
   maxHealth: 1000
 
   constructor: (options) ->

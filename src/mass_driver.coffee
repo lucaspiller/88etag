@@ -4,7 +4,7 @@ class MassDriver extends Movable
 
   radius: 32
   healthRadius: 8
-  mass: 10000
+  mass: 250
   maxHealth: 1000
 
   constructor: (options) ->

@@ -225,9 +225,8 @@ class Movable
       @healthBall.remove()
 
   step: ->
-    # magical force to stop large objects
-    if @mass >= 1000
-      @velocity.multiplyScalar(0.99)
+    # magical force to stop 'stationary' objects
+    @velocity.multiplyScalar(0.99)
     @position.addSelf @velocity
     if Math.abs(@rotationalVelocity) > 0
       @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
@@ -250,34 +249,18 @@ class Movable
   handleCollision: (other) ->
     return unless @solid and other.solid
 
-    x = @position.clone().subSelf(other.position).normalize()
-    v1 = @velocity.clone()
-    x1 = x.dot(v1)
-    v1x = x.clone().multiplyScalar(x1)
-    v1y = v1.clone().subSelf(v1x)
+    # calculate elastic collision response
+    # source http://www.themcclungs.net/physics/download/H/Momentum/ElasticCollisions.pdf
+    v1i = @velocity
+    v2i = other.velocity
     m1 = @mass
-
-    x = x.multiplyScalar(-1)
-    v2 = other.velocity.clone()
-    x2 = x.dot(v2)
-    v2x = x.clone().multiplyScalar(x2)
-    v2y = v2.clone().subSelf(v2x)
     m2 = other.mass
 
-    @velocity = v1x.clone().multiplyScalar((m1 - m2) / (m1 + m2)).addSelf(v2x.multiplyScalar((2 * m2) / (m1 + m2)).addSelf(v1y)).multiplyScalar(0.75)
-    @acceleration = new THREE.Vector3 0, 0, 0
+    @velocity = v1i.clone().multiplyScalar((m1 - m2) / (m2 + m1)).addSelf(
+      v2i.clone().multiplyScalar((2 * m2) / (m2 + m1))).multiplyScalar(0.75)
 
-    if other.mass < 1000
-      other.velocity = v1x.clone().multiplyScalar((2 * m1) / (m1 + m2)).addSelf(v2x.multiplyScalar((m2 - m1) / (m1 + m2)).addSelf(v2y)).multiplyScalar(0.75)
-      other.acceleration = new THREE.Vector3 0, 0, 0
-
-    # check that both velocities aren't zero, if so set the
-    # velocity of the object with the smallest mass to be the normal
-    if @velocity.length() == 0 and other.velocity.length() == 0
-      if m1 < m2
-        @velocity = x.clone().multiplyScalar -1
-      else
-        other.velocity = x.clone().multiplyScalar 1
+    other.velocity = v1i.clone().multiplyScalar((2 * m1) / (m2 + m1)).addSelf(
+      v2i.clone().multiplyScalar((m2 - m1) / (m2 + m1))).multiplyScalar(0.75)
 
     # make sure the objects are no longer touching,
     # otherwise hack away until they aren't
