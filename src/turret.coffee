@@ -21,10 +21,11 @@ class TurretBase
     new THREE.Mesh geometry, material
 
 class Turret extends Movable
-  AI_STEP_INTERVAL = 60
+  AI_STEP_INTERVAL = 30
   ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
   FIRE_ANGLE_DIFF_MAX = Math.PI / 8
   FIRE_MAX_DISTANCE = 1000
+  TARGETTING_MAX_DISTANCE = 3000
 
   radius: 20
   healthRadius: 8
@@ -85,12 +86,12 @@ class Turret extends Movable
   fire: ->
     if @bulletDelay <= 0
       @universe.bullets.newTurretBullet this
-      @bulletDelay = 50
+      @bulletDelay = 150
 
   aiStep: ->
     @chooseTarget() unless @target
-    if @target && @target.ship
-      vector = @target.ship.position.clone().subSelf @position
+    if @target
+      vector = @target.position.clone().subSelf @position
       @angle = Math.atan2(vector.y, vector.x)
       @shouldFire = Math.abs(@rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
     else
@@ -98,7 +99,8 @@ class Turret extends Movable
 
   chooseTarget: ->
     for player in @universe.players
-      if player != @parent
-        console.log player, @parent
-        @target = player
-        break
+      if player != @parent && player.ship
+        vector = player.ship.position.clone().subSelf @position
+        if vector.length() < TARGETTING_MAX_DISTANCE
+          @target = player.ship
+          break
