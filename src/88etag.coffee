@@ -9,7 +9,8 @@ class Controller
     'models/command_centre.js',
     'models/command_centre_inner.js',
     'models/turret.js'
-    'models/turret_base.js'
+    'models/turret_base.js',
+    'models/mass_driver.js'
   ]
 
   constructor: (@container) ->
