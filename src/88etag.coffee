@@ -13,7 +13,7 @@ class Controller
     'models/mass_driver.js'
   ]
 
-  constructor: (@container) ->
+  constructor: ->
     @setupRenderer()
     @setupScene()
     @load()
@@ -32,7 +32,10 @@ class Controller
     # clear to black background
     @renderer.setClearColorHex 0x080808, 1
     @renderer.setSize @width(), @height()
-    @container.append @renderer.domElement
+
+    container = document.createElement 'div'
+    document.body.appendChild container
+    container.appendChild @renderer.domElement
 
     if window.Stats
       @stats = new Stats()
@@ -69,12 +72,6 @@ class Controller
 
   camera_y_max: (range_y) ->
     @camera.position.y + (range_y) / 2
-
-  width: ->
-    window.innerWidth
-
-  height: ->
-    window.innerHeight
 
   load: ->
     @geometries = {}
@@ -293,4 +290,4 @@ $(document).ready ->
       Detector.addGetWebGLMessage()
       return
 
-    new Controller $('#container')
+    new Controller
