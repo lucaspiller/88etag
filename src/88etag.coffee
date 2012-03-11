@@ -34,7 +34,7 @@ class Controller
     @renderer.setSize @width(), @height()
     @container.append @renderer.domElement
 
-    if Stats
+    if window.Stats
       @stats = new Stats()
       @stats.domElement.style.position = 'absolute'
       @stats.domElement.style.top = '0px'
