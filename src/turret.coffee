@@ -84,7 +84,7 @@ class Turret extends Movable
 
   fire: ->
     if @bulletDelay <= 0
-      @universe.bullets.newShipBullet this
+      @universe.bullets.newTurretBullet this
       @bulletDelay = 50
 
   aiStep: ->

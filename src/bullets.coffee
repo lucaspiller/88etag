@@ -2,48 +2,48 @@ class BulletsStorage
   constructor: (options) ->
     @universe = options.universe
     @controller = options.controller
-    @pool = []
+    @shipBulletPool = []
+    @turretBulletPool = []
 
-  addToPool: (bullet) ->
-    @pool.push bullet
+  addToShipBulletPool: (bullet) ->
+    @shipBulletPool.push bullet
 
   newShipBullet: (parent) ->
-    for i in [1..2]
-      bullet = @pool.pop()
-      unless bullet
-        bullet = new ShipBullet {
-          controller: @controller
-          universe: @universe
-        }
-      bullet.setup parent
+    bullet = @shipBulletPool.pop()
+    unless bullet
+      bullet = new ShipBullet {
+        controller: @controller
+        universe: @universe
+      }
+    bullet.setup parent
 
-class ShipBullet extends Movable
+  newTurretBullet: (parent) ->
+    bullet = @turretBulletPool.pop()
+    unless bullet
+      bullet = new TurretBullet {
+        controller: @controller
+        universe: @universe
+      }
+    bullet.setup parent
+
+class Bullet extends Movable
   solid: false
-  damage: 100
-  radius: 5
   mass: 0
 
   constructor: (options) ->
     super options
 
-  buildMesh: ->
-    geometry = new THREE.SphereGeometry 5
-    material = new THREE.MeshBasicMaterial
-    new THREE.Mesh geometry, material
-
   setup: (@parent) ->
     @position.set @parent.position.x, @parent.position.y, @parent.position.z - 10
+    @rotation = @parent.rotation - (Math.PI * 1.5)
+    @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
     @velocity.x = Math.cos @parent.rotation
     @velocity.y = Math.sin @parent.rotation
-    @velocity.multiplyScalar 6
-    @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
-    @lifetime = 100
     @alive = true
 
   remove: ->
     @alive = false
     @position.z = @controller.NEAR
-    @universe.bullets.addToPool this
 
   step: ->
     if @alive
@@ -61,3 +61,40 @@ class ShipBullet extends Movable
       other.explode()
     @remove()
 
+class ShipBullet extends Bullet
+  damage: 100
+  radius: 5
+
+  buildMesh: ->
+    geometry = new THREE.SphereGeometry 5
+    material = new THREE.MeshBasicMaterial
+    new THREE.Mesh geometry, material
+
+  setup: (@parent) ->
+    super
+    @velocity.multiplyScalar 6
+    @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+    @lifetime = 100
+
+  remove: ->
+    super
+    @universe.bullets.addToShipBulletPool this
+
+class TurretBullet extends Bullet
+  damage: 100
+  radius: 5
+
+  buildMesh: ->
+    geometry = new THREE.CylinderGeometry(2, 1, 10, 10)
+    material = new THREE.MeshBasicMaterial
+    new THREE.Mesh geometry, material
+
+  setup: (@parent) ->
+    super
+    @velocity.multiplyScalar 6
+    @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+    @lifetime = 100
+
+  remove: ->
+    super
+    @universe.bullets.addToShipBulletPool this
