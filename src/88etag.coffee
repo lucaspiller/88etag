@@ -33,9 +33,9 @@ class Controller
     @renderer.setClearColorHex 0x080808, 1
     @renderer.setSize @width(), @height()
 
-    container = document.createElement 'div'
-    document.body.appendChild container
-    container.appendChild @renderer.domElement
+    @container = document.createElement 'div'
+    document.body.appendChild @container
+    @container.appendChild @renderer.domElement
 
     if window.Stats
       @stats = new Stats()

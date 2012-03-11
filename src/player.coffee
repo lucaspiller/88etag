@@ -123,55 +123,49 @@ class CommandCentre extends Movable
     @inner.position.set @position.x, @position.y, @position.z
     @inner.step()
 
-class Indicator extends Movable
-  HIDDEN_Z = 2000
-  solid: false
-
-  buildMesh: ->
-    material = new THREE.MeshBasicMaterial {
-      color: 0xFF0000
-    }
-    geometry = new THREE.CylinderGeometry 5, 5, 0.1, 16
-    mesh = new THREE.Mesh geometry, material
-    mesh.rotateAboutWorldAxis(THREE.AxisX, Math.PI / 2)
-    mesh
-
+class Indicator
   constructor: (options) ->
+    @controller = options.controller
+    @universe = options.universe
     @parent = options.parent
-    super
-    [@screen_range_x, @screen_range_y] = @controller.screen_range(650)
+    @element = document.createElement 'div'
+    $(@element).addClass 'indicator'
+    @controller.container.appendChild @element
+    [@range_x, @range_y] = @controller.screen_range(600)
 
   step: ->
-    super
-    if @universe.player == @parent
-      @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+    $(@element).addClass 'player' if @parent == @universe.player
 
-    @camera_x_min = @controller.camera_x_min(@screen_range_x)
-    @camera_x_max = @controller.camera_x_max(@screen_range_x)
-    @camera_y_min = @controller.camera_y_min(@screen_range_y)
-    @camera_y_max = @controller.camera_y_max(@screen_range_y)
+    camera_x_min = @controller.camera_x_min(@range_x)
+    camera_x_max = @controller.camera_x_max(@range_x)
+    camera_y_min = @controller.camera_y_min(@range_y)
+    camera_y_max = @controller.camera_y_max(@range_y)
 
-    @xOnScreen = false
-    @yOnScreen = false
+    if @parent.commandCentre
+      position = @parent.commandCentre.position
+      xOff = true
+      yOff = true
 
-    if @parent.commandCentre.position.x < @camera_x_min
-      @position.x = @camera_x_min
-    else if @parent.commandCentre.position.x > @camera_x_max
-      @position.x = @camera_x_max
-    else
-      @xOnScreen = true
+      if position.x < camera_x_min
+        x = 0
+      else if position.x > camera_x_max
+        x = @controller.width()
+      else
+        x = (((position.x - camera_x_min) / @range_x)) * @controller.width()
+        xOff = false
 
-    if @parent.commandCentre.position.y < @camera_y_min
-      @position.y = @camera_y_min
-    else if @parent.commandCentre.position.y > @camera_y_max
-      @position.y = @camera_y_max
-    else
-      @yOnScreen = true
+      if position.y < camera_y_min
+        y = @controller.height()
+      else if position.y > camera_y_max
+        y = 0
+      else
+        y = (1 - ((position.y - camera_y_min) / @range_y)) * @controller.height()
+        yOff = false
 
-    if @xOnScreen && @yOnScreen
-      @position.z = HIDDEN_Z
-    else
-      @position.z = 575
+      if yOff || xOff
+        $(@element).css({ 'top': y - 10, 'left': x - 10 })
+      else
+        $(@element).css({ 'top': -20, 'left': -20 })
 
 class Player
   constructor: (@options) ->
@@ -190,7 +184,7 @@ class Player
     @ship = new PlayerShip @options
 
   step: ->
-    true
+    @indicator.step()
     unless @ship
       if @respawnDelay <= 0
         @buildShip()
