@@ -31,11 +31,12 @@ class TrailsStorage
     trail.setup parent.position
 
 class Trail extends Movable
-  HIDDEN_Z = 1000
+  HIDDEN_Z = 2000
 
   solid: false
 
   constructor: (options) ->
+    @opacity_step = (@max_opacity - @min_opacity) / @max_lifetime
     super options
 
   buildMesh: ->
@@ -47,6 +48,7 @@ class Trail extends Movable
     @position.set position.x, position.y, position.z - 10
     @lifetime = @max_lifetime
     @alive = true
+    @mesh.material.opacity = @max_opacity
 
   remove: ->
     @alive = false
@@ -56,7 +58,7 @@ class Trail extends Movable
     if @alive
       if @lifetime > 0
         @position.addSelf @velocity
-        @mesh.material.opacity = @lifetime / @max_lifetime
+        @mesh.material.opacity -= @opacity_step
         @lifetime--
       else
         @remove()
@@ -66,6 +68,8 @@ class Trail extends Movable
 
 class ShipTrail extends Trail
   max_lifetime: 30
+  max_opacity: 1
+  min_opacity: 0
 
   buildMesh: ->
     geometry = new THREE.SphereGeometry 1
@@ -83,6 +87,8 @@ class ShipTrail extends Trail
 
 class TurretBulletTrail extends Trail
   max_lifetime: 5
+  max_opacity: 0.5
+  min_opacity: 0
 
   buildMesh: ->
     geometry = new THREE.SphereGeometry 1
@@ -91,7 +97,7 @@ class TurretBulletTrail extends Trail
 
   setup: (position) ->
     super
-    @velocity.set (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4, 0
+    @velocity.set (Math.random() - 0.5) / 2, (Math.random() - 0.5) / 2, 0
     @mesh.material.color.setRGB(100, 100, 100)
 
   remove: ->

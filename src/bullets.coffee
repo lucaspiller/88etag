@@ -30,7 +30,7 @@ class BulletsStorage
     bullet.setup parent
 
 class Bullet extends Movable
-  HIDDEN_Z = 1000
+  HIDDEN_Z = 2000
 
   solid: false
   mass: 0
