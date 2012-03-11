@@ -133,9 +133,11 @@ class Universe
 
   checkCollisions: ->
     for m1 in @masses
-      for m2 in @masses
-        if m1.mass <= m2.mass and m1.overlaps m2
-          m1.handleCollision m2
+      if m1.alive
+        for m2 in @masses
+          if m2.alive
+            if m1.mass <= m2.mass and m1.overlaps m2
+              m1.handleCollision m2
     true
 
 class HealthBall
@@ -180,6 +182,7 @@ class Movable
   solid: true
   radius: 10
   rotationalVelocity: 0
+  alive: true
 
   constructor: (options) ->
     @controller = options.controller
