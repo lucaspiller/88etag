@@ -30,6 +30,8 @@ class BulletsStorage
     bullet.setup parent
 
 class Bullet extends Movable
+  HIDDEN_Z = 1000
+
   solid: false
   mass: 0
 
@@ -46,7 +48,8 @@ class Bullet extends Movable
 
   remove: ->
     @alive = false
-    @position.z = @controller.NEAR
+    @position.z = HIDDEN_Z
+    @mesh.rotateAboutObjectAxis(THREE.AxisZ, -@rotation)
 
   step: ->
     if @alive
