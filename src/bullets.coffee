@@ -108,4 +108,4 @@ class TurretBullet extends Bullet
   step: ->
     super
     if @alive
-      #@universe.trails.newShipTrail this
+      @universe.trails.newTurretBulletTrail this
