@@ -8,6 +8,9 @@ class BulletsStorage
   addToShipBulletPool: (bullet) ->
     @shipBulletPool.push bullet
 
+  addToTurretBulletPool: (bullet) ->
+    @turretBulletPool.push bullet
+
   newShipBullet: (parent) ->
     bullet = @shipBulletPool.pop()
     unless bullet
@@ -97,4 +100,9 @@ class TurretBullet extends Bullet
 
   remove: ->
     super
-    @universe.bullets.addToShipBulletPool this
+    @universe.bullets.addToTurretBulletPool this
+
+  step: ->
+    super
+    if @alive
+      #@universe.trails.newShipTrail this
