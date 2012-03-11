@@ -281,9 +281,12 @@ class Movable
 
     # make sure the objects are no longer touching,
     # otherwise hack away until they aren't
-    while @overlaps other
-      @position.addSelf(@velocity)
-      other.position.addSelf(other.velocity)
+    if @overlaps other
+      @velocity.x += Math.random() - 0.5
+      @velocity.y += Math.random() - 0.5
+      while @overlaps other
+        @position.addSelf(@velocity)
+        other.position.addSelf(other.velocity)
 
 $(document).ready ->
     unless Detector.webgl
