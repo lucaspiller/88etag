@@ -123,12 +123,67 @@ class CommandCentre extends Movable
     @inner.position.set @position.x, @position.y, @position.z
     @inner.step()
 
+class Indicator extends Movable
+  HIDDEN_Z = 2000
+  solid: false
+
+  buildMesh: ->
+    material = new THREE.MeshBasicMaterial {
+      color: 0xFF0000
+    }
+    geometry = new THREE.CylinderGeometry 5, 5, 0.1, 16
+    mesh = new THREE.Mesh geometry, material
+    mesh.rotateAboutWorldAxis(THREE.AxisX, Math.PI / 2)
+    mesh
+
+  constructor: (options) ->
+    @parent = options.parent
+    super
+    [@screen_range_x, @screen_range_y] = @controller.screen_range(650)
+
+  step: ->
+    super
+    if @universe.player == @parent
+      @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+
+    @camera_x_min = @controller.camera_x_min(@screen_range_x)
+    @camera_x_max = @controller.camera_x_max(@screen_range_x)
+    @camera_y_min = @controller.camera_y_min(@screen_range_y)
+    @camera_y_max = @controller.camera_y_max(@screen_range_y)
+
+    @xOnScreen = false
+    @yOnScreen = false
+
+    if @parent.commandCentre.position.x < @camera_x_min
+      @position.x = @camera_x_min
+    else if @parent.commandCentre.position.x > @camera_x_max
+      @position.x = @camera_x_max
+    else
+      @xOnScreen = true
+
+    if @parent.commandCentre.position.y < @camera_y_min
+      @position.y = @camera_y_min
+    else if @parent.commandCentre.position.y > @camera_y_max
+      @position.y = @camera_y_max
+    else
+      @yOnScreen = true
+
+    if @xOnScreen && @yOnScreen
+      @position.z = HIDDEN_Z
+    else
+      @position.z = 575
+
 class Player
   constructor: (@options) ->
     options.parent = this
     @universe = options.universe
     @controller = options.controller
     @commandCentre = new CommandCentre options
+    @indicator = new Indicator {
+      controller: @controller,
+      universe: @universe,
+      parent: this
+    }
     @buildShip()
 
   buildShip: ->

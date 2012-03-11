@@ -168,7 +168,7 @@ class HealthBall
 
   buildMeshes: ->
     geometry = new THREE.CylinderGeometry @radius, @radius, 0.1, 16
-    material = new THREE.MeshPhongMaterial()
+    material = new THREE.MeshBasicMaterial()
     material.color.setRGB(0, 25 / 255, 0)
     material.opacity = 0.3
     @outerMesh = new THREE.Mesh geometry, material
