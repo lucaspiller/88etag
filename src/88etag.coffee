@@ -48,10 +48,26 @@ class Controller
     @camera.position.set 0, 0, CAMERA_Z
     @scene.add @camera
 
+    # find max range of screen
+    @screen_range_x = Math.tan(@camera.fov * Math.PI / 180) * @camera.position.z * 2
+    @screen_range_y = @screen_range_x / @camera.aspect
+
     # add light sources
     @scene.add new THREE.AmbientLight 0x999999
     @light = new THREE.PointLight 0xffffff
     @scene.add @light
+
+  camera_x_min: ->
+    @camera.position.x - (@screen_range_x) / 2
+
+  camera_x_max: ->
+    @camera.position.x + (@screen_range_x) / 2
+
+  camera_y_min: ->
+    @camera.position.y - (@screen_range_y) / 2
+
+  camera_y_max: ->
+    @camera.position.y + (@screen_range_y) / 2
 
   width: ->
     window.innerWidth
