@@ -285,9 +285,12 @@ class Movable
         @position.addSelf(@velocity)
         other.position.addSelf(other.velocity)
 
-$(document).ready ->
+if typeof window != 'undefined'
+  # running on browser
+  $(document).ready ->
     unless Detector.webgl
       Detector.addGetWebGLMessage()
       return
 
     new Controller
+
