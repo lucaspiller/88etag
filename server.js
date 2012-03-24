@@ -7,5 +7,6 @@ app.listen(8000);
 app.use(express.static(__dirname + '/public'));
 
 var io = socketio.listen(app);
+io.set('log level', 1);
 var server = new game.server;
 server.start(io);
