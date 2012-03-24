@@ -3,6 +3,7 @@ class Client
 
   constructor: (@controller) ->
     @connected = false
+    @id = Math.random() # TODO
 
   connect: (host, callback) ->
     @socket = io.connect host
@@ -15,16 +16,20 @@ class Client
         callback()
     @socket.on 'connect_failed', () ->
       alert 'Unable to connect to server!'
+    @socket.on 'objectCreated', (data) ->
+      if data.clientId != @id
+        console.log 'Object created', data
+    @socket.on 'objectMoved', (data) ->
+      if data.clientId != @id
+        console.log 'Object moved', data
+    @socket.on 'objectDestroyed', (data) ->
+      if data.clientId != @id
+        console.log 'Object destroyed', data
 
   objectCreated: (object) ->
     if object.solid
       object.lastSendStep = @controller.localStep
       @socket.emit 'objectCreated', @serialize(object)
-
-  objectDestroyed: (object) ->
-    if object.solid
-      object.lastSendStep = @controller.localStep
-      @socket.emit 'objectDestroyed', @serialize(object)
 
   objectMoved: (object) ->
     if object.solid
@@ -32,8 +37,14 @@ class Client
         object.lastSendStep = @controller.localStep
         @socket.emit 'objectMoved', @serialize(object)
 
+  objectDestroyed: (object) ->
+    if object.solid
+      object.lastSendStep = @controller.localStep
+      @socket.emit 'objectDestroyed', @serialize(object)
+
   serialize: (object) ->
     {
+      clientId: @id,
       id: object.id,
       type: object.type
       position: {
