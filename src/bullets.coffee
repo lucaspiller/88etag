@@ -47,6 +47,7 @@ class Bullet extends Movable
     @alive = true
 
   remove: ->
+    @controller.client.objectDestroyed this
     @alive = false
     @position.z = HIDDEN_Z
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, -@rotation)
@@ -82,6 +83,7 @@ class ShipBullet extends Bullet
     @velocity.multiplyScalar 6
     @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
     @lifetime = 100
+    @controller.client.objectCreated this
 
   remove: ->
     super
@@ -102,6 +104,7 @@ class TurretBullet extends Bullet
     @velocity.multiplyScalar 6
     @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
     @lifetime = 100
+    @controller.client.objectCreated this
 
   remove: ->
     super

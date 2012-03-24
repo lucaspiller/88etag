@@ -19,11 +19,16 @@ class Client
       alert 'Unable to connect to server!'
     @socket.on 'objectCreated', (data) =>
       if data.clientId != @id
+        if @objects[data.id]
+          object = @objects[data.id]
+          object.remove()
+          delete object
         object = new Movable {
           controller: @controller,
           universe: @universe,
           local: false
         }
+        object.solid = data.solid
         object.position.x = data.position.x
         object.position.y = data.position.y
         object.velocity.x = data.velocity.x
@@ -38,21 +43,23 @@ class Client
         object.velocity.y = data.velocity.y
     @socket.on 'objectDestroyed', (data) =>
       if data.clientId != @id
-        delete @objects[data.id]
+        object = @objects[data.id]
+        object.remove()
+        delete object
 
   objectCreated: (object) ->
-    if object.solid
+    if object.collidable
       object.lastSendStep = @controller.localStep
       @socket.emit 'objectCreated', @serialize(object)
 
   objectMoved: (object) ->
-    if object.solid
+    if object.collidable
       if (@controller.localStep - object.lastSendStep) > SEND_INTERVAL
         object.lastSendStep = @controller.localStep
         @socket.emit 'objectMoved', @serialize(object)
 
   objectDestroyed: (object) ->
-    if object.solid
+    if object.collidable
       object.lastSendStep = @controller.localStep
       @socket.emit 'objectDestroyed', @serialize(object)
 
@@ -60,7 +67,8 @@ class Client
     {
       clientId: @id,
       id: object.id,
-      type: object.type
+      type: object.type,
+      solid: object.solid,
       position: {
         x: object.position.x,
         y: object.position.y

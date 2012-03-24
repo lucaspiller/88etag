@@ -206,6 +206,7 @@ class Movable
   healthRadius: 10
   mass: 1
   solid: true
+  collidable: true
   radius: 10
   rotationalVelocity: 0
   alive: true
@@ -261,9 +262,12 @@ class Movable
         @healthBall.remove()
 
   step: ->
-    # magical force to stop 'stationary' objects
-    @velocity.multiplyScalar(0.99)
+    if @solid
+      # magical force to stop 'stationary' objects
+      @velocity.multiplyScalar(0.99)
+
     @position.addSelf @velocity
+
     if @local
       unless @velocity.isZero()
         @controller.client.objectMoved this

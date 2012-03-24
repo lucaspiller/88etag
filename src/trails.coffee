@@ -34,6 +34,7 @@ class Trail extends Movable
   HIDDEN_Z = 2000
 
   solid: false
+  collidable: false
 
   constructor: (options) ->
     @opacity_step = (@max_opacity - @min_opacity) / @max_lifetime
