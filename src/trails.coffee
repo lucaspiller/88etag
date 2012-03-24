@@ -67,6 +67,7 @@ class Trail extends Movable
     true
 
 class ShipTrail extends Trail
+  type: 'ShipTrail'
   max_lifetime: 30
   max_opacity: 1
   min_opacity: 0
@@ -86,6 +87,7 @@ class ShipTrail extends Trail
     @universe.trails.addToShipTrailPool this
 
 class TurretBulletTrail extends Trail
+  type: 'TurretBulletTrail'
   max_lifetime: 5
   max_opacity: 0.5
   min_opacity: 0

@@ -1,4 +1,5 @@
 class PlayerShip extends Movable
+  type: 'PlayerShip'
   healthRadius: 8
   maxHealth: 1000
   radius: 10
@@ -96,6 +97,7 @@ class CommandCentreInner
     @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
 
 class CommandCentre extends Movable
+  type: 'CommandCentre'
   mass: 999999999999999999
   healthRadius: 25
   maxHealth: 10000

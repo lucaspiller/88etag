@@ -68,6 +68,7 @@ class Bullet extends Movable
     @remove()
 
 class ShipBullet extends Bullet
+  type: 'ShipBullet'
   damage: 100
   radius: 5
 
@@ -87,6 +88,7 @@ class ShipBullet extends Bullet
     @universe.bullets.addToShipBulletPool this
 
 class TurretBullet extends Bullet
+  type: 'TurretBullet'
   damage: 100
   radius: 5
 

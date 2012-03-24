@@ -15,11 +15,12 @@ class Controller
 
   constructor: ->
     @loadedModels = false
+    @localStep = 0
 
     @setupRenderer()
     @setupScene()
 
-    @client = new Client
+    @client = new Client this
     @client.connect window.location, () =>
       @continueLoad()
 
@@ -109,6 +110,7 @@ class Controller
     @renderer.render @scene, @camera
 
     @stats.update() if @stats
+    @localStep++
 
 class Universe
   constructor: (@controller) ->
@@ -199,6 +201,7 @@ class HealthBall
     @innerMesh.scale.set(health / @maxHealth, health / @maxHealth, health / @maxHealth)
 
 class Movable
+  type: 'unknown'
   maxHealth: 100
   healthRadius: 10
   mass: 1
@@ -208,6 +211,8 @@ class Movable
   alive: true
 
   constructor: (options) ->
+    @id = Math.random() # TODO
+
     @controller = options.controller
     @universe = options.universe
 
@@ -221,6 +226,7 @@ class Movable
     @health = @maxHealth
 
     @universe.masses.push this
+    @controller.client.objectCreated this
 
     if @solid
       @healthBall = new HealthBall {
@@ -242,6 +248,8 @@ class Movable
     @remove()
 
   remove: ->
+    @controller.client.objectDestroyed this
+
     @controller.scene.remove @mesh
     @universe.masses = _.without @universe.masses, this
     if @solid
@@ -250,7 +258,10 @@ class Movable
   step: ->
     # magical force to stop 'stationary' objects
     @velocity.multiplyScalar(0.99)
-    @position.addSelf @velocity
+    unless @velocity.isZero()
+      @position.addSelf @velocity
+      @controller.client.objectMoved this
+
     if Math.abs(@rotationalVelocity) > 0
       @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
       @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)

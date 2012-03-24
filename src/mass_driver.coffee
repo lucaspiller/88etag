@@ -2,6 +2,7 @@ class MassDriver extends Movable
   AI_STEP_INTERVAL = 60
   FIRE_MAX_DISTANCE = 300
 
+  type: 'MassDriver'
   radius: 32
   healthRadius: 8
   mass: 250
@@ -69,6 +70,7 @@ class MassDriver extends Movable
           break
 
 class MassDriverFire extends Movable
+  type: 'MassDriverFire'
   solid: false
   mass: 0
 

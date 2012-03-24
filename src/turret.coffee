@@ -27,6 +27,7 @@ class Turret extends Movable
   FIRE_MAX_DISTANCE = 1000
   TARGETTING_MAX_DISTANCE = 3000
 
+  type: 'Turret'
   radius: 20
   healthRadius: 8
   mass: 50
