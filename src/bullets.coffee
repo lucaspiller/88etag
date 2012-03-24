@@ -69,14 +69,9 @@ class Bullet extends Movable
     @remove()
 
 class ShipBullet extends Bullet
-  type: 'ShipBullet'
+  type: 'shipBullet'
   damage: 100
   radius: 5
-
-  buildMesh: ->
-    geometry = new THREE.SphereGeometry 5
-    material = new THREE.MeshBasicMaterial
-    new THREE.Mesh geometry, material
 
   setup: (@parent) ->
     super
@@ -90,14 +85,9 @@ class ShipBullet extends Bullet
     @universe.bullets.addToShipBulletPool this
 
 class TurretBullet extends Bullet
-  type: 'TurretBullet'
+  type: 'turretBullet'
   damage: 100
   radius: 5
-
-  buildMesh: ->
-    geometry = new THREE.CylinderGeometry(2, 1, 10, 10)
-    material = new THREE.MeshBasicMaterial
-    new THREE.Mesh geometry, material
 
   setup: (@parent) ->
     super

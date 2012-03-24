@@ -32,6 +32,18 @@ class MeshFactory
     geometry = @controller.geometries['models/ship_basic.js']
     @buildMesh(material, geometry)
 
+  shipBullet: ->
+    geometry = new THREE.SphereGeometry 5
+    material = new THREE.MeshBasicMaterial
+    material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+    @buildMesh(material, geometry)
+
+  turretBullet: ->
+    geometry = new THREE.CylinderGeometry(2, 1, 10, 10)
+    material = new THREE.MeshBasicMaterial
+    material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
+    @buildMesh(material, geometry)
+
   commandCentreInner: ->
     material = new THREE.MeshFaceMaterial
     geometry = @controller.geometries['models/command_centre_inner.js']
