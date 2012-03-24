@@ -14,8 +14,15 @@ class Controller
   ]
 
   constructor: ->
+    @loadedModels = false
+
     @setupRenderer()
     @setupScene()
+
+    @client = new Client
+    @client.connect window.location, () =>
+      @continueLoad()
+
     @load()
 
   width: ->
@@ -84,11 +91,13 @@ class Controller
       geometry.computeVertexNormals()
       @geometries[model] = geometry
       if _.size(@geometries) == _.size(@models)
+        @loadedModels = true
         @continueLoad()
 
   continueLoad: ->
-    @universe = new Universe this
-    @render()
+    if @loadedModels && @client.connected
+      @universe = new Universe this
+      @render()
 
   render: ->
     requestAnimationFrame (=> @render())
@@ -293,4 +302,3 @@ if typeof window != 'undefined'
       return
 
     new Controller
-
