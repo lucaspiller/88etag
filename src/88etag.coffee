@@ -210,6 +210,7 @@ class Movable
   solid: true
   collidable: true
   radius: 10
+  rotation: 0
   rotationalVelocity: 0
   alive: true
 
@@ -274,16 +275,21 @@ class Movable
 
     @position.addSelf @velocity
 
+    if Math.abs(@rotationalVelocity) > 0
+      @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
+      @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
+
     if @local
       unless @velocity.isZero()
         @controller.client.objectMoved this
 
-      if Math.abs(@rotationalVelocity) > 0
-        @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
-        @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
-
       if @solid
         @healthBall.update @position, @health
+
+  setRotation: (rotation) ->
+    @mesh.rotateAboutWorldAxis(THREE.AxisZ, -@rotation)
+    @mesh.rotateAboutWorldAxis(THREE.AxisZ, rotation)
+    @rotation = rotation
 
   overlaps: (other) ->
     return unless @local and other.local # TODO

@@ -36,6 +36,8 @@ class Client
         object.position.y = data.position.y
         object.velocity.x = data.velocity.x
         object.velocity.y = data.velocity.y
+        object.setRotation data.rotation
+        object.rotationalVelocity = data.rotationalVelocity
         @objects[data.id] = object
     @socket.on 'objectMoved', (data) =>
       if data.clientId != @id
@@ -44,6 +46,8 @@ class Client
         object.position.y = data.position.y
         object.velocity.x = data.velocity.x
         object.velocity.y = data.velocity.y
+        object.setRotation data.rotation
+        object.rotationalVelocity = data.rotationalVelocity
     @socket.on 'objectDestroyed', (data) =>
       if data.clientId != @id
         object = @objects[data.id]
@@ -72,6 +76,8 @@ class Client
       id: object.id,
       type: object.type,
       solid: object.solid,
+      rotation: object.rotation,
+      rotationalVelocity: object.rotationalVelocity,
       position: {
         x: object.position.x,
         y: object.position.y
