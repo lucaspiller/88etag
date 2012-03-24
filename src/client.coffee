@@ -24,10 +24,12 @@ class Client
           object = @objects[data.id]
           object.remove()
           delete object
+
         object = new Movable {
           controller: @controller,
           universe: @universe,
-          local: false
+          local: false,
+          type: data.type
         }
         object.solid = data.solid
         object.position.x = data.position.x
