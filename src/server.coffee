@@ -16,8 +16,9 @@ class Server
         @objects[data.id] = data
 
       socket.on 'objectMoved', (data) =>
-        @io.sockets.emit 'objectMoved', data
-        @objects[data.id] = data
+        if @objects[data.id]
+          @io.sockets.emit 'objectMoved', data
+          @objects[data.id] = data
 
       socket.on 'objectDestroyed', (data) =>
         @io.sockets.emit 'objectDestroyed', data
