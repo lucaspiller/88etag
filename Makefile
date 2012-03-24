@@ -1,5 +1,5 @@
 server:
-	python -m SimpleHTTPServer
+	supervisor -w .,lib server.js
 
 dev:
 	coffee --watch --join lib/88etag.js --compile src/*.coffee
