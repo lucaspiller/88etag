@@ -11,10 +11,6 @@ class PlayerShip extends Movable
     super options
     @parent = options.parent
     @acceleration = new THREE.Vector3 0, 0, 0
-    @position.y = @parent.commandCentre.position.y - @parent.commandCentre.radius - 10
-
-    @rotation = Math.PI * 1.5
-    @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
     @bulletDelay = 0
 
   rotateLeft: ->
@@ -159,7 +155,6 @@ class Indicator
 
 class Player
   constructor: (@options) ->
-    options.parent = this
     @universe = options.universe
     @controller = options.controller
     @commandCentre = new CommandCentre options
@@ -171,7 +166,14 @@ class Player
     @buildShip()
 
   buildShip: ->
-    @ship = new PlayerShip @options
+    y = @commandCentre.position.y - @commandCentre.radius - 10
+    @ship = new PlayerShip {
+      controller: @controller
+      universe: @universe
+      parent: this
+      rotation: Math.PI * 1.5
+      position: { y: y }
+    }
 
   step: ->
     @indicator.step()

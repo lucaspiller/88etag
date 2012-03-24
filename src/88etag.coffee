@@ -233,7 +233,8 @@ class Movable
 
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
     @mesh.position = @position
-    @rotation = 0
+    @rotation = options.rotation ? 0
+    @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
     @health = @maxHealth
 
     @universe.masses.push this
