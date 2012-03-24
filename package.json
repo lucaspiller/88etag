@@ -1,0 +1,16 @@
+{
+  "author": "Luca Spiller <luca@stackednotion.com> (http://www.stackednotion.com/)",
+  "name": "88etag",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lucaspiller/88etag.git"
+  },
+  "dependencies": {
+    "socket.io": "0.9.2",
+    "express": "2.5.8"
+  },
+  "engines": {
+    "node": "~0.6"
+  }
+}
