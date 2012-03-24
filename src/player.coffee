@@ -1,5 +1,5 @@
 class PlayerShip extends Movable
-  type: 'PlayerShip'
+  type: 'playerShip'
   healthRadius: 8
   maxHealth: 1000
   radius: 10
@@ -16,13 +16,6 @@ class PlayerShip extends Movable
     @rotation = Math.PI * 1.5
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
     @bulletDelay = 0
-
-  buildMesh: ->
-    material = new THREE.MeshLambertMaterial {
-      ambient: 0x5E574B
-      color: 0x5E574B
-    }
-    new THREE.Mesh @controller.geometries['models/ship_basic.js'], material
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64
@@ -90,14 +83,13 @@ class CommandCentreInner
     @controller.scene.remove @mesh
 
   buildMesh: ->
-    material = new THREE.MeshFaceMaterial
-    new THREE.Mesh @controller.geometries['models/command_centre_inner.js'], material
+    @controller.meshFactory.commandCentreInner()
 
   step: ->
     @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
 
 class CommandCentre extends Movable
-  type: 'CommandCentre'
+  type: 'commandCentre'
   mass: 999999999999999999
   healthRadius: 25
   maxHealth: 10000
@@ -111,10 +103,6 @@ class CommandCentre extends Movable
     if options.position
       @position.x = @mesh.position.x = options.position.x
       @position.y = @mesh.position.y = options.position.y
-
-  buildMesh: ->
-    material = new THREE.MeshFaceMaterial
-    new THREE.Mesh @controller.geometries['models/command_centre.js'], material
 
   remove: ->
     super

@@ -14,11 +14,7 @@ class TurretBase
     @controller.scene.remove @mesh
 
   buildMesh: ->
-    material = new THREE.MeshFaceMaterial
-    geometry = @controller.geometries['models/turret_base.js']
-    for material in geometry.materials
-      material.shading = THREE.FlatShading
-    new THREE.Mesh geometry, material
+    @controller.meshFactory.turretBase()
 
 class Turret extends Movable
   AI_STEP_INTERVAL = 30
@@ -27,7 +23,7 @@ class Turret extends Movable
   FIRE_MAX_DISTANCE = 1000
   TARGETTING_MAX_DISTANCE = 3000
 
-  type: 'Turret'
+  type: 'turret'
   radius: 20
   healthRadius: 8
   mass: 50
@@ -42,13 +38,6 @@ class Turret extends Movable
 
     @aiStepCounter = 0
     @bulletDelay = 0
-
-  buildMesh: ->
-    material = new THREE.MeshFaceMaterial
-    geometry = @controller.geometries['models/turret.js']
-    for material in geometry.materials
-      material.shading = THREE.FlatShading
-    new THREE.Mesh geometry, material
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64

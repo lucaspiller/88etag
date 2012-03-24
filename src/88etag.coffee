@@ -51,6 +51,8 @@ class Controller
       @stats.domElement.style.top = '0px'
       container.appendChild @stats.domElement
 
+    @meshFactory = new MeshFactory this
+
   setupScene: ->
     @scene = new THREE.Scene()
 
@@ -217,6 +219,7 @@ class Movable
     @controller = options.controller
     @universe = options.universe
     @local = options.local ? true
+    @type = options.type ? @type
 
     @mesh = @buildMesh()
     @mesh.rotateAboutWorldAxis THREE.AxisZ, 0.001 # hack to fix a bug in ThreeJS?
@@ -241,12 +244,15 @@ class Movable
         }
 
   buildMesh: ->
-    geometry = new THREE.CubeGeometry 10, 10, 10
-    material = new THREE.MeshLambertMaterial {
-      ambient: 0xFF0000
-      color: 0xFF0000
-    }
-    new THREE.Mesh geometry, material
+    if @controller.meshFactory[@type]
+      @controller.meshFactory[@type]()
+    else
+      geometry = new THREE.CubeGeometry 10, 10, 10
+      material = new THREE.MeshLambertMaterial {
+        ambient: 0xFF0000
+        color: 0xFF0000
+      }
+      new THREE.Mesh geometry, material
 
   explode: ->
     @remove()

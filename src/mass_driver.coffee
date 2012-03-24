@@ -2,7 +2,7 @@ class MassDriver extends Movable
   AI_STEP_INTERVAL = 60
   FIRE_MAX_DISTANCE = 300
 
-  type: 'MassDriver'
+  type: 'massDriver'
   radius: 32
   healthRadius: 8
   mass: 250
@@ -17,13 +17,6 @@ class MassDriver extends Movable
     @aiStepCounter = 0
     @fireDelay = 60
     @rotationalVelocity = Math.PI / 512
-
-  buildMesh: ->
-    material = new THREE.MeshLambertMaterial {
-      ambient: 0x5B3C1D
-      color: 0x5B3C1D
-    }
-    new THREE.Mesh @controller.geometries['models/mass_driver.js'], material
 
   remove: ->
     super
@@ -70,7 +63,7 @@ class MassDriver extends Movable
           break
 
 class MassDriverFire extends Movable
-  type: 'MassDriverFire'
+  type: 'massDriverFire'
   solid: false
   mass: 0
 
