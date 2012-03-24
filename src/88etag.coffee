@@ -97,7 +97,7 @@ class Controller
 
   continueLoad: ->
     if @loadedModels && @client.connected
-      @universe = new Universe this
+      @universe = @client.universe = new Universe this
       @render()
 
   render: ->
@@ -215,6 +215,7 @@ class Movable
 
     @controller = options.controller
     @universe = options.universe
+    @local = options.local ? true
 
     @mesh = @buildMesh()
     @mesh.rotateAboutWorldAxis THREE.AxisZ, 0.001 # hack to fix a bug in ThreeJS?
@@ -226,15 +227,17 @@ class Movable
     @health = @maxHealth
 
     @universe.masses.push this
-    @controller.client.objectCreated this
 
-    if @solid
-      @healthBall = new HealthBall {
-        controller: @controller
-        position: @position
-        maxHealth: @maxHealth
-        radius: @healthRadius
-      }
+    if @local
+      @controller.client.objectCreated this
+
+      if @solid
+        @healthBall = new HealthBall {
+          controller: @controller
+          position: @position
+          maxHealth: @maxHealth
+          radius: @healthRadius
+        }
 
   buildMesh: ->
     geometry = new THREE.CubeGeometry 10, 10, 10
@@ -248,28 +251,33 @@ class Movable
     @remove()
 
   remove: ->
-    @controller.client.objectDestroyed this
-
     @controller.scene.remove @mesh
     @universe.masses = _.without @universe.masses, this
-    if @solid
-      @healthBall.remove()
+
+    if @local
+      @controller.client.objectDestroyed this
+
+      if @solid
+        @healthBall.remove()
 
   step: ->
     # magical force to stop 'stationary' objects
     @velocity.multiplyScalar(0.99)
-    unless @velocity.isZero()
-      @position.addSelf @velocity
-      @controller.client.objectMoved this
+    @position.addSelf @velocity
+    if @local
+      unless @velocity.isZero()
+        @controller.client.objectMoved this
 
-    if Math.abs(@rotationalVelocity) > 0
-      @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
-      @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
+      if Math.abs(@rotationalVelocity) > 0
+        @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
+        @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
 
-    if @solid
-      @healthBall.update @position, @health
+      if @solid
+        @healthBall.update @position, @health
 
   overlaps: (other) ->
+    return unless @local and other.local # TODO
+
     return false if other == this
     x = @position.x - other.position.x
     y = @position.y - other.position.y

@@ -1,9 +1,10 @@
 class Client
-  SEND_INTERVAL = 60
+  SEND_INTERVAL = 10
 
   constructor: (@controller) ->
     @connected = false
     @id = Math.random() # TODO
+    @objects = []
 
   connect: (host, callback) ->
     @socket = io.connect host
@@ -16,15 +17,28 @@ class Client
         callback()
     @socket.on 'connect_failed', () ->
       alert 'Unable to connect to server!'
-    @socket.on 'objectCreated', (data) ->
+    @socket.on 'objectCreated', (data) =>
       if data.clientId != @id
-        console.log 'Object created', data
-    @socket.on 'objectMoved', (data) ->
+        object = new Movable {
+          controller: @controller,
+          universe: @universe,
+          local: false
+        }
+        object.position.x = data.position.x
+        object.position.y = data.position.y
+        object.velocity.x = data.velocity.x
+        object.velocity.y = data.velocity.y
+        @objects[data.id] = object
+    @socket.on 'objectMoved', (data) =>
       if data.clientId != @id
-        console.log 'Object moved', data
-    @socket.on 'objectDestroyed', (data) ->
+        object = @objects[data.id]
+        object.position.x = data.position.x
+        object.position.y = data.position.y
+        object.velocity.x = data.velocity.x
+        object.velocity.y = data.velocity.y
+    @socket.on 'objectDestroyed', (data) =>
       if data.clientId != @id
-        console.log 'Object destroyed', data
+        delete @objects[data.id]
 
   objectCreated: (object) ->
     if object.solid
