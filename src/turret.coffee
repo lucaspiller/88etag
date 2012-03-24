@@ -33,8 +33,6 @@ class Turret extends Movable
     @base = new TurretBase options
     super options
     @parent = options.parent
-    @position.x = options.position.x
-    @position.y = options.position.y
 
     @aiStepCounter = 0
     @bulletDelay = 0

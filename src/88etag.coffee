@@ -222,12 +222,17 @@ class Movable
     @local = options.local ? true
     @type = options.type ? @type
 
+    @position = new THREE.Vector3 0, 0, 500
+    @position.x = options.position?.x ? 0
+    @position.y = options.position?.y ? 0
+
     @mesh = @buildMesh()
     @mesh.rotateAboutWorldAxis THREE.AxisZ, 0.001 # hack to fix a bug in ThreeJS?
+    @mesh.position = @position
     @controller.scene.add @mesh
 
     @velocity = @mesh.velocity = new THREE.Vector3 0, 0, 0
-    @position = @mesh.position = new THREE.Vector3 0, 0, 500
+    @mesh.position = @position
     @rotation = 0
     @health = @maxHealth
 

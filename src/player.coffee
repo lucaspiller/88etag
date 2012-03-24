@@ -215,7 +215,7 @@ class LocalPlayer extends Player
     turret = new Turret {
       universe: @universe,
       controller: @controller,
-      position: @ship.position.clone(),
+      position: @ship.position,
       parent: this
     }
 
@@ -223,7 +223,7 @@ class LocalPlayer extends Player
     massdriver = new MassDriver {
       universe: @universe,
       controller: @controller,
-      position: @ship.position.clone(),
+      position: @ship.position,
       parent: this
     }
 

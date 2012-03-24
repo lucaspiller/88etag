@@ -11,8 +11,6 @@ class MassDriver extends Movable
   constructor: (options) ->
     super options
     @parent = options.parent
-    @position.x = options.position.x
-    @position.y = options.position.y
 
     @aiStepCounter = 0
     @fireDelay = 60
