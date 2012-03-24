@@ -13,6 +13,7 @@ class Client
         # reconnected, just reload the page for now
         window.location = window.location
       else
+        @socket.emit 'clientId', @id
         @connected = true
         callback()
     @socket.on 'connect_failed', () ->
