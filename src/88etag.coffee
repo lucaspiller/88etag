@@ -25,23 +25,30 @@ class Controller
     window.innerHeight
 
   setupRenderer: ->
-    @renderer = new THREE.WebGLRenderer {
-      antialias: true # smoother output
-    }
+    @container = document.getElementById 'container'
+
+    if window.location.hash == "#slow"
+      @container.className = 'double'
+
+      @renderer = new THREE.WebGLRenderer
+      @renderer.setSize @width() / 2, @height() / 2
+      @renderer.sortObjects = false
+    else
+      @renderer = new THREE.WebGLRenderer {
+        antialias: true # smoother output
+      }
+      @renderer.setSize @width(), @height()
 
     # clear to black background
     @renderer.setClearColorHex 0x080808, 1
-    @renderer.setSize @width(), @height()
 
-    @container = document.createElement 'div'
-    document.body.appendChild @container
     @container.appendChild @renderer.domElement
 
     if window.Stats
       @stats = new Stats()
       @stats.domElement.style.position = 'absolute'
       @stats.domElement.style.top = '0px'
-      container.appendChild @stats.domElement
+      @container.appendChild @stats.domElement
 
   setupScene: ->
     @scene = new THREE.Scene()
