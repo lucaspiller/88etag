@@ -223,25 +223,35 @@ class LocalPlayer extends Player
 
   positionFor: (type) ->
     position = @ship.position.clone()
-    position.x += Math.sin((Math.PI / 2) - @ship.rotation) * (type::radius + @ship.radius)
-    position.y += Math.cos((Math.PI / 2) - @ship.rotation) * (type::radius + @ship.radius)
+    position.x += Math.sin((Math.PI / 2) - @ship.rotation) * (type::radius + (@ship.radius * 2))
+    position.y += Math.cos((Math.PI / 2) - @ship.rotation) * (type::radius + (@ship.radius * 2))
     position
 
   buildTurret: ->
-    turret = new Turret {
-      universe: @universe,
-      controller: @controller,
-      position: @positionFor(Turret),
-      parent: this
-    }
+    position = @positionFor(Turret)
+    overlap = @universe.anythingOverlaps(position, Turret::radius)
+    if overlap
+      console.log('turret would overlap', overlap)
+    else
+      turret = new Turret {
+        universe: @universe,
+        controller: @controller,
+        position: position,
+        parent: this
+      }
 
   buildMassDriver: ->
-    massdriver = new MassDriver {
-      universe: @universe,
-      controller: @controller,
-      position: @positionFor(MassDriver),
-      parent: this
-    }
+    position = @positionFor(MassDriver)
+    overlap = @universe.anythingOverlaps(position, MassDriver::radius)
+    if overlap
+      console.log('mass driver would overlap', overlap)
+    else
+      massdriver = new MassDriver {
+        universe: @universe,
+        controller: @controller,
+        position: position,
+        parent: this
+      }
 
 class AiPlayer extends Player
   AI_STEP_INTERVAL = 5

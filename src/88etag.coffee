@@ -161,6 +161,13 @@ class Universe
               m1.handleCollision m2
     true
 
+  anythingOverlaps: (position, radius) ->
+    for m1 in @masses
+      if m1.alive && m1.solid
+        if m1.overlapsPosition(position, radius)
+          return m1
+    false
+
 class HealthBall
   constructor: (options) ->
     @controller = options.controller
@@ -260,11 +267,14 @@ class Movable
 
   overlaps: (other) ->
     return false if other == this
-    x = @position.x - other.position.x
-    y = @position.y - other.position.y
-    max = (other.radius + @radius)
+    @overlapsPosition(other.position, other.radius)
+
+  overlapsPosition: (position, radius) ->
+    x = @position.x - position.x
+    y = @position.y - position.y
+    max = (radius + @radius)
     if x < max && y < max
-      diff = Math.sqrt( x * x + y * y )
+      diff = Math.sqrt(x * x + y * y)
       diff <= max
     else
       false
