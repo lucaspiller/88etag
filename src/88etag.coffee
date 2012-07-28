@@ -197,6 +197,8 @@ class HealthBall
     @innerMesh.scale.set(health / @maxHealth, health / @maxHealth, health / @maxHealth)
 
 class Movable
+  COEF_OF_RESTITUTION: 0.75
+
   maxHealth: 100
   healthRadius: 10
   mass: 1
@@ -263,12 +265,16 @@ class Movable
     max = (other.radius + @radius)
     if x < max && y < max
       diff = Math.sqrt( x * x + y * y )
-      diff < max
+      diff <= max
     else
       false
 
   handleCollision: (other) ->
     return unless @solid and other.solid
+
+    # reverse objects so they are no longer colliding (hopefully)
+    @position.subSelf(@velocity)
+    other.position.subSelf(other.velocity)
 
     # calculate elastic collision response
     # source http://www.themcclungs.net/physics/download/H/Momentum/ElasticCollisions.pdf
@@ -278,19 +284,29 @@ class Movable
     m2 = other.mass
 
     @velocity = v1i.clone().multiplyScalar((m1 - m2) / (m2 + m1)).addSelf(
-      v2i.clone().multiplyScalar((2 * m2) / (m2 + m1))).multiplyScalar(0.75)
+      v2i.clone().multiplyScalar((2 * m2) / (m2 + m1))).multiplyScalar(@COEF_OF_RESTITUTION)
 
     other.velocity = v1i.clone().multiplyScalar((2 * m1) / (m2 + m1)).addSelf(
-      v2i.clone().multiplyScalar((m2 - m1) / (m2 + m1))).multiplyScalar(0.75)
+      v2i.clone().multiplyScalar((m2 - m1) / (m2 + m1))).multiplyScalar(@COEF_OF_RESTITUTION)
+
+    # check that both velocities aren't zero, if they are set the
+    # velocity of the object with the smallest mass to be the normal
+    if @velocity.length() == 0 and other.velocity.length() == 0
+      @velocity = @position.clone().subSelf(other.position).normalize()
 
     # make sure the objects are no longer touching,
     # otherwise hack away until they aren't
+    times = 0
     if @overlaps other
-      @velocity.x += Math.random() - 0.5
-      @velocity.y += Math.random() - 0.5
+      oldVelocity = @velocity.clone()
       while @overlaps other
+        times += 1
         @position.addSelf(@velocity)
         other.position.addSelf(other.velocity)
+        if times == 100
+          @velocity.x = Math.random() - 0.5
+          @velocity.y = Math.random() - 0.5
+      @velocity = oldVelocity
 
 $(document).ready ->
     unless Detector.webgl
