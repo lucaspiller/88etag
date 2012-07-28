@@ -14,7 +14,7 @@ class Starfield
       pY = Math.random() * @screen_range_y - (@screen_range_y / 2)
       pZ = depthMagnitude * FAR - NEAR
 
-      particle = new THREE.Vertex(new THREE.Vector3(pX, pY, pZ))
+      particle = new THREE.Vector3(pX, pY, pZ)
       @particles.vertices.push(particle)
 
       # set the brightness based upon distance, closer particles are brighter
@@ -39,16 +39,16 @@ class Starfield
     @camera_y_min = @controller.camera_y_min(@screen_range_y)
     @camera_y_max = @controller.camera_y_max(@screen_range_y)
     for particle in @particles.vertices
-      if particle.position.x < @camera_x_min
-        while particle.position.x < @camera_x_min
-          particle.position.x += @screen_range_x
-      else if particle.position.x > @camera_x_max
-        while particle.position.x > @camera_x_max
-          particle.position.x -= @screen_range_x
+      if particle.x < @camera_x_min
+        while particle.x < @camera_x_min
+          particle.x += @screen_range_x
+      else if particle.x > @camera_x_max
+        while particle.x > @camera_x_max
+          particle.x -= @screen_range_x
 
-      if particle.position.y < @camera_y_min
-        while particle.position.y < @camera_y_min
-          particle.position.y += @screen_range_y
-      else if particle.position.y > @camera_y_max
-        while particle.position.y > @camera_y_max
-          particle.position.y -= @screen_range_y
+      if particle.y < @camera_y_min
+        while particle.y < @camera_y_min
+          particle.y += @screen_range_y
+      else if particle.y > @camera_y_max
+        while particle.y > @camera_y_max
+          particle.y -= @screen_range_y
