@@ -221,11 +221,17 @@ class LocalPlayer extends Player
       @controller.camera.position.x = @ship.position.x
       @controller.camera.position.y = @ship.position.y
 
+  positionFor: (type) ->
+    position = @ship.position.clone()
+    position.x += Math.sin((Math.PI / 2) - @ship.rotation) * (type::radius + @ship.radius)
+    position.y += Math.cos((Math.PI / 2) - @ship.rotation) * (type::radius + @ship.radius)
+    position
+
   buildTurret: ->
     turret = new Turret {
       universe: @universe,
       controller: @controller,
-      position: @ship.position.clone(),
+      position: @positionFor(Turret),
       parent: this
     }
 
@@ -233,7 +239,7 @@ class LocalPlayer extends Player
     massdriver = new MassDriver {
       universe: @universe,
       controller: @controller,
-      position: @ship.position.clone(),
+      position: @positionFor(MassDriver),
       parent: this
     }
 
