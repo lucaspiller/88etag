@@ -14,6 +14,8 @@
     body {
       margin: 0px;
       overflow: hidden;
+      font-family: Helvetica, Arial, sans;
+      text-transform: uppercase;
     }
     .indicator {
       position: absolute;
@@ -33,6 +35,32 @@
       -webkit-transform-origin: 0 0;
       transform: scale(2);
       transform-origin: 0 0;
+    }
+    .menu {
+      position: absolute;
+      color: #FFF;
+      text-align: center;
+    }
+    .menu .left, .menu .right, .menu .up, .menu .down {
+      width: 200px;
+      position: absolute;
+    }
+
+    .menu .left {
+      left: 0;
+      top: 50%;
+    }
+    .menu .right {
+      right: 0;
+      top: 50%;
+    }
+    .menu .up {
+      left: 200px;
+      top: 80px;
+    }
+    .menu .down {
+      left: 200px;
+      bottom: 0px;
     }
   </style>
 </head>
