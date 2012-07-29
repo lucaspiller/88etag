@@ -5,11 +5,6 @@ class ShipTrail extends Trail
   max_opacity: 1
   min_opacity: 0
 
-  buildMesh: ->
-    geometry = new THREE.SphereGeometry 1
-    material = new THREE.MeshBasicMaterial
-    new THREE.Mesh geometry, material
-
   setup: (position) ->
     super
     @velocity.set (Math.random() - 0.5) / 4, (Math.random() - 0.5) / 4, 0

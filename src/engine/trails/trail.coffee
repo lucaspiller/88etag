@@ -2,6 +2,7 @@ Movable = require '../movable'
 
 class Trail extends Movable
   HIDDEN_Z = 2000
+  GEOMETRY = new THREE.SphereGeometry 1
 
   solid: false
 
@@ -10,9 +11,8 @@ class Trail extends Movable
     super options
 
   buildMesh: ->
-    geometry = new THREE.SphereGeometry 1
     material = new THREE.MeshBasicMaterial
-    new THREE.Mesh geometry, material
+    new THREE.Mesh GEOMETRY, material
 
   setup: (position) ->
     @position.set position.x, position.y, position.z - 10
