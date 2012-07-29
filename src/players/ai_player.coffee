@@ -1,4 +1,4 @@
-Player = require 'player'
+Player = require 'players/player'
 
 class AiPlayer extends Player
   AI_STEP_INTERVAL = 5

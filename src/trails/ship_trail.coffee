@@ -1,4 +1,4 @@
-Trail = require 'trail'
+Trail = require 'trails/trail'
 
 class ShipTrail extends Trail
   max_lifetime: 30

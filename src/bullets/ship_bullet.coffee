@@ -1,4 +1,4 @@
-Bullet = require 'bullet'
+Bullet = require 'bullets/bullet'
 
 class ShipBullet extends Bullet
   damage: 100

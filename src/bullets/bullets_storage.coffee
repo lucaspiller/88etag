@@ -1,5 +1,5 @@
-ShipBullet = require 'ship_bullet'
-TurretBullet = require 'turret_bullet'
+ShipBullet = require 'bullets/ship_bullet'
+TurretBullet = require 'bullets/turret_bullet'
 
 class BulletsStorage
   constructor: (options) ->

@@ -1,6 +1,6 @@
-Player = require 'player'
-Turret = require 'turret'
-MassDriver = require 'mass_driver'
+Player = require 'players/player'
+Turret = require 'weapons/turret'
+MassDriver = require 'weapons/mass_driver'
 
 class LocalPlayer extends Player
   step: ->

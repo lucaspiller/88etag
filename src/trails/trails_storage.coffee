@@ -1,5 +1,5 @@
-ShipTrail = require 'ship_trail'
-TurretBulletTrail = require 'turret_bullet_trail'
+ShipTrail = require 'trails/ship_trail'
+TurretBulletTrail = require 'trails/turret_bullet_trail'
 
 class TrailsStorage
   constructor: (options) ->

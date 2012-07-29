@@ -1,10 +1,10 @@
 require 'threejs_extensions'
 
 Starfield = require 'starfield'
-TrailsStorage = require 'trails_storage'
-BulletsStorage = require 'bullets_storage'
-LocalPlayer = require 'local_player'
-AiPlayer = require 'ai_player'
+TrailsStorage = require 'trails/trails_storage'
+BulletsStorage = require 'bullets/bullets_storage'
+LocalPlayer = require 'players/local_player'
+AiPlayer = require 'players/ai_player'
 
 class Controller
   VIEW_ANGLE = 45
