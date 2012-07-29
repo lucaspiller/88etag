@@ -1,5 +1,5 @@
 $(document).ready ->
-  require 'templates'
+  GameMenu =  require 'game_menu'
 
   unless Detector.webgl
     Detector.addGetWebGLMessage()
@@ -13,25 +13,6 @@ $(document).ready ->
 
     dispose: ->
       true
-
-  class Menu extends Backbone.View
-    className: 'menu'
-    width: 600
-    height: 600
-
-    render: ->
-      @$el.append @template
-      @$el.css 'width', @width
-      @$el.css 'height', @height
-      @$el.css 'left', (window.innerWidth - @width) / 2
-      @$el.css 'top', (window.innerHeight - @height) / 2
-      this
-
-    dispose: ->
-      @$el.remove()
-
-  class MainMenu extends Menu
-    template: JST['menu/main_menu']
 
   class PlayView extends Backbone.View
     render: ->
@@ -51,19 +32,30 @@ $(document).ready ->
       if key == 27
         router.navigate '/', true
 
-      if key == 65
-        unless @menu
-          @menu = new MainMenu
+      if @menu
+        switch key
+          when 37 # left
+            @menu = @menu.left(@engine)
+            return false
+          when 39 # right
+            @menu = @menu.right(@engine)
+            return false
+          when 38 # up
+            @menu = @menu.up(@engine)
+            return false
+          when 40 # down
+            @menu = @menu.down(@engine)
+            return false
+      else
+        if key == 65
+          @menu = new GameMenu
           @$el.append @menu.render().el
-
       true
 
     keyUp: (key) =>
       if key == 65
         if @menu
-          @menu.dispose()
-          @menu = false
-
+          @menu = @menu.dispose()
       true
 
 
