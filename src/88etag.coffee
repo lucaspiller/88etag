@@ -3,7 +3,7 @@ $(document).ready ->
     Detector.addGetWebGLMessage()
     return
 
-  Engine = require 'engine'
+  Engine = require 'engine/engine'
   new Engine {
     container: document.getElementById 'container'
     aiPlayers: 1
