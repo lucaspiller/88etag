@@ -43,6 +43,7 @@ class Movable
     new THREE.Mesh geometry, material
 
   explode: ->
+    @alive = false
     @remove()
 
   remove: ->

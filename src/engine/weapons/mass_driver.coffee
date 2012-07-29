@@ -57,7 +57,7 @@ class MassDriver extends Movable
 
   aiStep: ->
     @chooseTarget() unless @target
-    if @target
+    if @target && @target.alive
       @shouldFire = true
     else
       @shouldFire = false

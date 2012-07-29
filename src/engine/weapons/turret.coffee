@@ -92,7 +92,7 @@ class Turret extends Movable
 
   aiStep: ->
     @chooseTarget() unless @target
-    if @target
+    if @target && @target.alive
       vector = @target.position.clone().subSelf @position
       @angle = Math.atan2(vector.y, vector.x)
       @shouldFire = Math.abs(@rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
