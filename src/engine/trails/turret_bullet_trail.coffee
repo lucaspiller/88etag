@@ -19,4 +19,4 @@ class TurretBulletTrail extends Trail
     super
     @universe.trails.addToTurretBulletTrailPool this
 
-module.exports = Trail
+module.exports = TurretBulletTrail
