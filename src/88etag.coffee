@@ -29,6 +29,8 @@ $(document).ready ->
     keyDown: (key) ->
       if key == 27
         router.navigate '/', true
+      true
+
   class Router extends Backbone.Router
     routes: {
       '': 'showIndex'
