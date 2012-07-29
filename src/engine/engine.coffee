@@ -155,6 +155,14 @@ class Universe
 
   removePlayer: (player) ->
     delete @players[player]
+
+    if player == @player
+      @gameOver()
+
+  gameOver: ->
+    if @controller.config.onGameOver
+      @controller.config.onGameOver()
+
   bindKeys: ->
     @keys = []
     $(window).bind('keydown', @keydown)
