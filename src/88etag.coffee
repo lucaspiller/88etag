@@ -18,14 +18,17 @@ $(document).ready ->
       @engine = new Engine {
         container: @$el.get(0)
         aiPlayers: 1
-        onEscape: =>
-          router.navigate '/', true
+        onKeyDown: (key) =>
+          @keyDown key
       }
       this
 
     dispose: ->
       @engine.dispose()
 
+    keyDown: (key) ->
+      if key == 27
+        router.navigate '/', true
   class Router extends Backbone.Router
     routes: {
       '': 'showIndex'
