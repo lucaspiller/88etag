@@ -319,8 +319,8 @@ class Movable
       @velocity = oldVelocity
 
 $(document).ready ->
-    unless Detector.webgl
-      Detector.addGetWebGLMessage()
-      return
+  unless Detector.webgl
+    Detector.addGetWebGLMessage()
+    return
 
-    new Controller
+  new Controller
