@@ -1,3 +1,5 @@
+Movable = require 'movable'
+
 class TurretBase
   constructor: (options) ->
     @controller = options.controller
@@ -104,3 +106,5 @@ class Turret extends Movable
         if vector.length() < TARGETTING_MAX_DISTANCE
           @target = player.ship
           break
+
+module.exports = Turret

@@ -1,3 +1,5 @@
+Movable = require 'movable'
+
 class MassDriver extends Movable
   AI_STEP_INTERVAL = 60
   FIRE_MAX_DISTANCE = 300
@@ -96,3 +98,5 @@ class MassDriverFire extends Movable
 
   handleCollision: (other) ->
     true
+
+module.exports = MassDriver
