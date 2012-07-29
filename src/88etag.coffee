@@ -1,5 +1,6 @@
 $(document).ready ->
   GameMenu =  require 'game_menu'
+  require 'templates'
 
   unless Detector.webgl
     Detector.addGetWebGLMessage()
@@ -14,7 +15,23 @@ $(document).ready ->
     dispose: ->
       true
 
+  class GameOverView extends Backbone.View
+    className: 'game_over'
+    template: JST['game_over']
+
+    render: ->
+      @$el.append @template
+      this
+
+    dispose: ->
+      @$el.remove()
+
   class PlayView extends Backbone.View
+    reset: ->
+      @dispose()
+      @$el.html('')
+      @render()
+
     render: ->
       Engine = require 'engine/engine'
       @engine = new Engine {
@@ -22,15 +39,22 @@ $(document).ready ->
         aiPlayers: 1
         onKeyDown: @keyDown
         onKeyUp: @keyUp
+        onGameOver: @gameOver
       }
       this
 
     dispose: ->
       @engine.dispose()
+      @engine = false
+      @menu.dispose() if @menu
+      @menu = false
+      @gameOverView.dispose() if @gameOverView
+      @gameOverView = false
 
     keyDown: (key) =>
       if key == 27
-        router.navigate '/', true
+        router.navigate '', true
+        return
 
       if @menu
         switch key
@@ -46,6 +70,10 @@ $(document).ready ->
           when 40 # down
             @menu = @menu.down(@engine)
             return false
+      if @gameOverView
+        if key == 32
+          @reset()
+        return false
       else
         if key == 65
           @menu = new GameMenu
@@ -58,6 +86,9 @@ $(document).ready ->
           @menu = @menu.dispose()
       true
 
+    gameOver: =>
+      @gameOverView = new GameOverView
+      @$el.append @gameOverView.render().el
 
   class Router extends Backbone.Router
     routes: {
