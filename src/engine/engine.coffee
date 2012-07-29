@@ -153,6 +153,8 @@ class Universe
       }
       @players.push ai
 
+  removePlayer: (player) ->
+    delete @players[player]
   bindKeys: ->
     @keys = []
     $(window).bind('keydown', @keydown)

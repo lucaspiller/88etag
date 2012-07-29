@@ -105,6 +105,7 @@ class CommandCentre extends Movable
   rotationalVelocity: Math.PI / 512
 
   constructor: (options) ->
+    @parent = options.parent
     @inner = new CommandCentreInner options
     super options
 
@@ -119,6 +120,9 @@ class CommandCentre extends Movable
   remove: ->
     super
     @inner.remove()
+
+  explode: ->
+    @parent.remove()
 
   step: ->
     super
@@ -143,31 +147,33 @@ class Indicator
     camera_y_min = @controller.camera_y_min(@range_y)
     camera_y_max = @controller.camera_y_max(@range_y)
 
-    if @parent.commandCentre
-      position = @parent.commandCentre.position
-      xOff = true
-      yOff = true
+    position = @parent.commandCentre.position
+    xOff = true
+    yOff = true
 
-      if position.x < camera_x_min
-        x = 0
-      else if position.x > camera_x_max
-        x = @controller.width()
-      else
-        x = (((position.x - camera_x_min) / @range_x)) * @controller.width()
-        xOff = false
+    if position.x < camera_x_min
+      x = 0
+    else if position.x > camera_x_max
+      x = @controller.width()
+    else
+      x = (((position.x - camera_x_min) / @range_x)) * @controller.width()
+      xOff = false
 
-      if position.y < camera_y_min
-        y = @controller.height()
-      else if position.y > camera_y_max
-        y = 0
-      else
-        y = (1 - ((position.y - camera_y_min) / @range_y)) * @controller.height()
-        yOff = false
+    if position.y < camera_y_min
+      y = @controller.height()
+    else if position.y > camera_y_max
+      y = 0
+    else
+      y = (1 - ((position.y - camera_y_min) / @range_y)) * @controller.height()
+      yOff = false
 
-      if yOff || xOff
-        $(@element).css({ 'top': y - 10, 'left': x - 10 })
-      else
-        $(@element).css({ 'top': -20, 'left': -20 })
+    if yOff || xOff
+      $(@element).css({ 'top': y - 10, 'left': x - 10 })
+    else
+      $(@element).css({ 'top': -20, 'left': -20 })
+
+  remove: ->
+    $(@element).remove()
 
 class Player
   constructor: (@options) ->
@@ -175,15 +181,8 @@ class Player
     @universe = options.universe
     @controller = options.controller
     @commandCentre = new CommandCentre options
-    @indicator = new Indicator {
-      controller: @controller,
-      universe: @universe,
-      parent: this
-    }
-    @buildShip()
-
-  buildShip: ->
-    @ship = new PlayerShip @options
+    @indicator = new Indicator options
+    @ship = new PlayerShip options
 
   step: ->
     @indicator.step()
@@ -196,5 +195,12 @@ class Player
   respawn: ->
     @ship = false
     @respawnDelay = 300
+
+  remove: ->
+    @commandCentre.remove()
+    @indicator.remove()
+    @ship.remove()
+    @ship = false
+    @universe.removePlayer this
 
 module.exports = Player
