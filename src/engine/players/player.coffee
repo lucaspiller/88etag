@@ -182,7 +182,10 @@ class Player
     @controller = options.controller
     @commandCentre = new CommandCentre options
     @indicator = new Indicator options
-    @ship = new PlayerShip options
+    @buildShip()
+
+  buildShip: ->
+    @ship = new PlayerShip @options
 
   step: ->
     @indicator.step()
