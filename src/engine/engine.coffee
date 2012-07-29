@@ -163,6 +163,8 @@ class Universe
     $(window).unbind('keyup', @keyup)
 
   keydown: (e) =>
+    if e.which == 27 && @controller.config.onEscape
+      @controller.config.onEscape()
     @keys.push e.which
     @keys = _.uniq @keys
 
