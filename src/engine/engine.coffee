@@ -12,6 +12,8 @@ class Engine
   FAR = 1000
   CAMERA_Z = 1000
 
+  disposed: false
+
   models: [
     'models/ship_basic.js',
     'models/command_centre.js',
@@ -105,6 +107,7 @@ class Engine
     @render()
 
   render: ->
+    return if @disposed
     requestAnimationFrame (=> @render())
 
     @universe.checkCollisions()
@@ -114,6 +117,10 @@ class Engine
     @renderer.render @scene, @camera
 
     @stats.update() if @stats
+
+  dispose: ->
+    @universe.unbindKeys()
+    @disposed = true
 
 class Universe
   constructor: (@controller) ->
@@ -148,13 +155,19 @@ class Universe
 
   bindKeys: ->
     @keys = []
+    $(window).bind('keydown', @keydown)
+    $(window).bind('keyup', @keyup)
 
-    $(window).keydown (e) =>
-      @keys.push e.which
-      @keys = _.uniq @keys
+  unbindKeys: ->
+    $(window).unbind('keydown', @keydown)
+    $(window).unbind('keyup', @keyup)
 
-    $(window).keyup (e) =>
-      @keys = _.without @keys, e.which
+  keydown: (e) =>
+    @keys.push e.which
+    @keys = _.uniq @keys
+
+  keyup: (e) =>
+    @keys = _.without @keys, e.which
 
   step: ->
     @starfield.step()
