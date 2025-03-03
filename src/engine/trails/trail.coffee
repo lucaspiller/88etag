@@ -1,14 +1,14 @@
-Movable = require '../movable'
+import { Movable } from '../movable.coffee'
 
-class Trail extends Movable
+export class Trail extends Movable
   HIDDEN_Z = 2000
   GEOMETRY = new THREE.SphereGeometry 1
 
   solid: false
 
   constructor: (options) ->
+    super(options)
     @opacity_step = (@max_opacity - @min_opacity) / @max_lifetime
-    super options
 
   buildMesh: ->
     material = new THREE.MeshBasicMaterial
@@ -35,5 +35,3 @@ class Trail extends Movable
 
   handleCollision: (other) ->
     true
-
-module.exports = Trail

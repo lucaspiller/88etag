@@ -1,10 +1,10 @@
-Player = require './player'
-Turret = require '../weapons/turret'
-MassDriver = require '../weapons/mass_driver'
+import { Player } from './player.coffee'
+import { Turret } from '../weapons/turret.coffee'
+import { MassDriver } from '../weapons/mass_driver.coffee'
 
-class LocalPlayer extends Player
+export class LocalPlayer extends Player
   step: ->
-    super
+    super()
     if @ship
       for key in @universe.keys
         switch key
@@ -59,5 +59,3 @@ class LocalPlayer extends Player
         position: position,
         parent: this
       }
-
-module.exports = LocalPlayer

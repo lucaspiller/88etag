@@ -1,6 +1,6 @@
-Player = require './player'
+import { Player } from './player.coffee'
 
-class AiPlayer extends Player
+export class AiPlayer extends Player
   AI_STEP_INTERVAL = 5
   ROTATE_ANGLE_DIFF_MAX = Math.PI / 16
   FIRE_ANGLE_DIFF_MAX = Math.PI / 8
@@ -10,13 +10,13 @@ class AiPlayer extends Player
     options.position = new THREE.Vector3 0, 0, 0
     options.position.x = (Math.random() * 10000) - 5000
     options.position.y = (Math.random() * 10000) - 5000
-    super options
+    super(options)
 
     @aiStepCounter = 0
     @angle = 0
 
   step: ->
-    super
+    super()
     if @ship
       if @aiStepCounter <= 0
         @aiStep()
@@ -46,5 +46,3 @@ class AiPlayer extends Player
       if player != this
         @target = player
         break
-
-module.exports = AiPlayer

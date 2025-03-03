@@ -1,7 +1,9 @@
-$(document).ready ->
-  GameMenu =  require 'game_menu'
-  require 'templates'
+import './threejs_extensions'
+import { GameMenu } from './game_menu.coffee'
+import { gameOver as gameOverTemplate } from './templates'
+import { Engine } from './engine/engine.coffee'
 
+$(document).ready ->
   unless Detector.webgl
     Detector.addGetWebGLMessage()
     return
@@ -17,7 +19,7 @@ $(document).ready ->
 
   class GameOverView extends Backbone.View
     className: 'game_over'
-    template: JST['game_over']
+    template: gameOverTemplate
 
     render: ->
       @$el.append @template
@@ -33,7 +35,6 @@ $(document).ready ->
       @render()
 
     render: ->
-      Engine = require 'engine/engine'
       @engine = new Engine {
         container: @$el.get(0)
         aiPlayers: 1

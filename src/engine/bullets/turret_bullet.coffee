@@ -1,6 +1,6 @@
-Bullet = require './bullet'
+import { Bullet } from './bullet.coffee'
 
-class TurretBullet extends Bullet
+export class TurretBullet extends Bullet
   damage: 100
   radius: 5
 
@@ -10,18 +10,16 @@ class TurretBullet extends Bullet
     new THREE.Mesh geometry, material
 
   setup: (@parent) ->
-    super
+    super(@parent)
     @velocity.multiplyScalar 6
     @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
     @lifetime = 100
 
   remove: ->
-    super
+    super()
     @universe.bullets.addToTurretBulletPool this
 
   step: ->
-    super
+    super()
     if @alive
       @universe.trails.newTurretBulletTrail this
-
-module.exports = TurretBullet

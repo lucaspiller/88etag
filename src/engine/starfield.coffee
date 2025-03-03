@@ -1,4 +1,4 @@
-class Starfield
+export class Starfield
   PARTICLE_COUNT = 50
   NEAR = 1
   FAR = 500
@@ -52,5 +52,3 @@ class Starfield
       else if particle.y > @camera_y_max
         while particle.y > @camera_y_max
           particle.y -= @screen_range_y
-
-module.exports = Starfield

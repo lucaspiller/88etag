@@ -1,7 +1,7 @@
-ShipTrail = require './ship_trail'
-TurretBulletTrail = require './turret_bullet_trail'
+import { ShipTrail } from './ship_trail.coffee'
+import { TurretBulletTrail } from './turret_bullet_trail.coffee'
 
-class TrailsStorage
+export class TrailsStorage
   constructor: (options) ->
     @universe = options.universe
     @controller = options.controller
@@ -32,5 +32,3 @@ class TrailsStorage
         universe: @universe
       }
     trail.setup parent.position
-
-module.exports = TrailsStorage

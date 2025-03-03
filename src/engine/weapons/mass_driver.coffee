@@ -1,6 +1,6 @@
-Movable = require '../movable'
+import { Movable } from '../movable.coffee'
 
-class MassDriver extends Movable
+export class MassDriver extends Movable
   AI_STEP_INTERVAL = 60
   FIRE_MAX_DISTANCE = 300
 
@@ -10,7 +10,7 @@ class MassDriver extends Movable
   maxHealth: 1000
 
   constructor: (options) ->
-    super options
+    super(options)
     @parent = options.parent
     @position.x = options.position.x
     @position.y = options.position.y
@@ -27,11 +27,11 @@ class MassDriver extends Movable
     new THREE.Mesh @controller.geometries['models/mass_driver.js'], material
 
   remove: ->
-    super
+    super()
     @base.remove()
 
   step: ->
-    super
+    super()
     if @aiStepCounter <= 0
       @aiStep()
       @aiStepCounter = AI_STEP_INTERVAL
@@ -81,9 +81,9 @@ class MassDriverFire extends Movable
     new THREE.Mesh geometry, material
 
   constructor: (options) ->
+    super(options)
     @vector = options.vector
     @parent = options.parent
-    super options
     @position.set @parent.position.x, @parent.position.y, @parent.position.z - 10
     @rotation = Math.atan2(@vector.y, @vector.x)
     @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
@@ -98,5 +98,3 @@ class MassDriverFire extends Movable
 
   handleCollision: (other) ->
     true
-
-module.exports = MassDriver

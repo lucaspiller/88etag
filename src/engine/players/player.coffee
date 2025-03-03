@@ -1,4 +1,4 @@
-Movable = require '../movable'
+import { Movable } from '../movable.coffee'
 
 class PlayerShip extends Movable
   healthRadius: 8
@@ -9,7 +9,7 @@ class PlayerShip extends Movable
   max_accel: 0.05
 
   constructor: (options) ->
-    super options
+    super(options)
     @parent = options.parent
     @acceleration = new THREE.Vector3 0, 0, 0
     @position.y = @parent.commandCentre.position.y - CommandCentre::radius - @radius - 1
@@ -67,10 +67,10 @@ class PlayerShip extends Movable
       @rotationalVelocity *= 0.9
     else
       @rotationalVelocity = 0
-    super
+    super()
 
   explode: ->
-    super
+    super()
     @parent.respawn()
 
 class CommandCentreInner
@@ -105,9 +105,9 @@ class CommandCentre extends Movable
   rotationalVelocity: Math.PI / 512
 
   constructor: (options) ->
+    super(options)
     @parent = options.parent
     @inner = new CommandCentreInner options
-    super options
 
     if options.position
       @position.x = @mesh.position.x = options.position.x
@@ -118,14 +118,14 @@ class CommandCentre extends Movable
     new THREE.Mesh @controller.geometries['models/command_centre.js'], material
 
   remove: ->
-    super
+    super()
     @inner.remove()
 
   explode: ->
     @parent.remove()
 
   step: ->
-    super
+    super()
     @inner.position.set @position.x, @position.y, @position.z
     @inner.step()
 
@@ -175,13 +175,13 @@ class Indicator
   remove: ->
     $(@element).remove()
 
-class Player
+export class Player
   constructor: (@options) ->
-    options.parent = this
-    @universe = options.universe
-    @controller = options.controller
-    @commandCentre = new CommandCentre options
-    @indicator = new Indicator options
+    @options.parent = this
+    @universe = @options.universe
+    @controller = @options.controller
+    @commandCentre = new CommandCentre @options
+    @indicator = new Indicator @options
     @buildShip()
 
   buildShip: ->
@@ -205,5 +205,3 @@ class Player
     @ship.remove()
     @ship = false
     @universe.removePlayer this
-
-module.exports = Player

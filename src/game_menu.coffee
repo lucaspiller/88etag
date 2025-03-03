@@ -1,4 +1,4 @@
-require 'templates'
+import { mainMenu, turretMenu } from './templates'
 
 class Menu extends Backbone.View
   className: 'menu'
@@ -34,14 +34,14 @@ class Menu extends Backbone.View
     @$el.replaceWith menu.render().el
     menu
 
-class MainMenu extends Menu
-  template: JST['game_menu/main_menu']
+export class GameMenu extends Menu
+  template: mainMenu
 
   left: ->
     @switchMenu TurretMenu
 
 class TurretMenu extends Menu
-  template: JST['game_menu/turret_menu']
+  template: turretMenu
 
   left: (engine) ->
     engine.universe.player.buildTurret()
@@ -50,5 +50,3 @@ class TurretMenu extends Menu
   right: (engine) ->
     engine.universe.player.buildMassDriver()
     @dispose()
-
-module.exports = MainMenu

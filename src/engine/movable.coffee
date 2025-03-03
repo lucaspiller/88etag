@@ -1,6 +1,6 @@
-HealthBall = require './healthball'
+import { HealthBall } from './healthball.coffee'
 
-class Movable
+export class Movable
   COEF_OF_RESTITUTION: 0.75
 
   maxHealth: 100
@@ -115,5 +115,3 @@ class Movable
           @velocity.x = Math.random() - 0.5
           @velocity.y = Math.random() - 0.5
       @velocity = oldVelocity
-
-module.exports = Movable

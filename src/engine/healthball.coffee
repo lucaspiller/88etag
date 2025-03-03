@@ -1,4 +1,4 @@
-class HealthBall
+export class HealthBall
   constructor: (options) ->
     @controller = options.controller
     @position = options.position
@@ -32,5 +32,3 @@ class HealthBall
     @outerMesh.position.set(position.x, position.y, position.z - 0.2)
     @innerMesh.position.set(position.x, position.y, position.z - 0.1)
     @innerMesh.scale.set(health / @maxHealth, health / @maxHealth, health / @maxHealth)
-
-module.exports = HealthBall

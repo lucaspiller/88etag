@@ -1,4 +1,4 @@
-Movable = require '../movable'
+import { Movable } from '../movable.coffee'
 
 class TurretBase
   constructor: (options) ->
@@ -22,7 +22,7 @@ class TurretBase
       material.shading = THREE.FlatShading
     new THREE.Mesh geometry, material
 
-class Turret extends Movable
+export class Turret extends Movable
   AI_STEP_INTERVAL = 30
   ROTATE_ANGLE_DIFF_MAX = Math.PI / 32
   FIRE_ANGLE_DIFF_MAX = Math.PI / 8
@@ -35,8 +35,8 @@ class Turret extends Movable
   maxHealth: 1000
 
   constructor: (options) ->
+    super(options)
     @base = new TurretBase options
-    super options
     @parent = options.parent
     @position.x = options.position.x
     @position.y = options.position.y
@@ -61,11 +61,11 @@ class Turret extends Movable
     @rotationalVelocity = 0
 
   remove: ->
-    super
+    super()
     @base.remove()
 
   step: ->
-    super
+    super()
     if @aiStepCounter <= 0
       @aiStep()
       @aiStepCounter = AI_STEP_INTERVAL
@@ -106,5 +106,3 @@ class Turret extends Movable
         if vector.length() < TARGETTING_MAX_DISTANCE
           @target = player.ship
           break
-
-module.exports = Turret

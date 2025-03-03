@@ -1,6 +1,6 @@
-Bullet = require './bullet'
+import { Bullet } from './bullet.coffee'
 
-class ShipBullet extends Bullet
+export class ShipBullet extends Bullet
   damage: 100
   radius: 5
 
@@ -10,13 +10,11 @@ class ShipBullet extends Bullet
     new THREE.Mesh geometry, material
 
   setup: (@parent) ->
-    super
+    super(@parent)
     @velocity.multiplyScalar 6
     @mesh.material.color.setRGB(89 / 255, 163 / 255, 89 / 255)
     @lifetime = 100
 
   remove: ->
-    super
+    super()
     @universe.bullets.addToShipBulletPool this
-
-module.exports = ShipBullet

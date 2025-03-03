@@ -1,13 +1,13 @@
-Movable = require '../movable'
+import { Movable } from '../movable.coffee'
 
-class Bullet extends Movable
+export class Bullet extends Movable
   HIDDEN_Z = 2000
 
   solid: false
   mass: 0
 
   constructor: (options) ->
-    super options
+    super(options)
 
   setup: (@parent) ->
     @position.set @parent.position.x, @parent.position.y, @parent.position.z - 10
@@ -37,5 +37,3 @@ class Bullet extends Movable
     if other.health <= 0
       other.explode()
     @remove()
-
-module.exports = Bullet

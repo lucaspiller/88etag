@@ -1,7 +1,7 @@
-ShipBullet = require './ship_bullet'
-TurretBullet = require './turret_bullet'
+import { ShipBullet } from './ship_bullet.coffee'
+import { TurretBullet } from './turret_bullet.coffee'
 
-class BulletsStorage
+export class BulletsStorage
   constructor: (options) ->
     @universe = options.universe
     @controller = options.controller
@@ -31,5 +31,3 @@ class BulletsStorage
         universe: @universe
       }
     bullet.setup parent
-
-module.exports = BulletsStorage

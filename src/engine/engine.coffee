@@ -1,12 +1,10 @@
-require 'threejs_extensions'
+import { Starfield } from './starfield.coffee'
+import { TrailsStorage } from './trails/trails_storage.coffee'
+import { BulletsStorage } from './bullets/bullets_storage.coffee'
+import { LocalPlayer } from './players/local_player.coffee'
+import { AiPlayer } from './players/ai_player.coffee'
 
-Starfield = require './starfield'
-TrailsStorage = require './trails/trails_storage'
-BulletsStorage = require './bullets/bullets_storage'
-LocalPlayer = require './players/local_player'
-AiPlayer = require './players/ai_player'
-
-class Engine
+export class Engine
   VIEW_ANGLE = 45
   NEAR = 1
   FAR = 1000
@@ -205,5 +203,3 @@ class Universe
         if m1.overlapsPosition(position, radius)
           return m1
     false
-
-module.exports = Engine
