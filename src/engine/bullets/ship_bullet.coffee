@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { Bullet } from './bullet.coffee'
 
 export class ShipBullet extends Bullet
@@ -7,6 +8,8 @@ export class ShipBullet extends Bullet
   buildMesh: ->
     geometry = new THREE.SphereGeometry 5
     material = new THREE.MeshBasicMaterial
+    material.transparent = true
+    material.opacity = 0.9
     new THREE.Mesh geometry, material
 
   setup: (@parent) ->

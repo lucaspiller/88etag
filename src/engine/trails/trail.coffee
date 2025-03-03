@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
 
 export class Trail extends Movable
@@ -12,6 +13,7 @@ export class Trail extends Movable
 
   buildMesh: ->
     material = new THREE.MeshBasicMaterial
+    material.transparent = true
     new THREE.Mesh GEOMETRY, material
 
   setup: (position) ->
@@ -27,7 +29,7 @@ export class Trail extends Movable
   step: ->
     if @alive
       if @lifetime > 0
-        @position.addSelf @velocity
+        @position.add @velocity
         @mesh.material.opacity -= @opacity_step
         @lifetime--
       else

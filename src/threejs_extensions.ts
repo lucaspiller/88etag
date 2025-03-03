@@ -1,20 +1,18 @@
-THREE.Mesh.prototype.rotateAboutObjectAxis = function(axis, radians) {
+import * as THREE from 'three'
+
+THREE.Mesh.prototype.rotateAboutObjectAxis = function(axis: THREE.Vector3, radians: number) {
   var rotationMatrix;
   rotationMatrix = new THREE.Matrix4();
   rotationMatrix.makeRotationAxis(axis.normalize(), radians);
-  this.matrix.multiplySelf(rotationMatrix);
-  return this.rotation.getRotationFromMatrix(this.matrix);
+  this.matrix.multiply(rotationMatrix);
+  return this.rotation.setFromRotationMatrix(this.matrix);
 };
 
-THREE.Mesh.prototype.rotateAboutWorldAxis = function(axis, radians) {
+THREE.Mesh.prototype.rotateAboutWorldAxis = function(axis: THREE.Vector3, radians: number) {
   var rotationMatrix;
   rotationMatrix = new THREE.Matrix4();
   rotationMatrix.makeRotationAxis(axis.normalize(), radians);
-  rotationMatrix.multiplySelf(this.matrix);
+  rotationMatrix.multiply(this.matrix);
   this.matrix = rotationMatrix;
-  return this.rotation.getRotationFromMatrix(this.matrix);
+  return this.rotation.setFromRotationMatrix(this.matrix);
 };
-
-THREE.AxisX = new THREE.Vector3(1, 0, 0);
-THREE.AxisY = new THREE.Vector3(0, 1, 0);
-THREE.AxisZ = new THREE.Vector3(0, 0, 1);

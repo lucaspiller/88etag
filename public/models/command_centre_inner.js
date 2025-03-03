@@ -19,12 +19,11 @@
 	"DbgColor" : 15658734,
 	"DbgIndex" : 0,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -32,12 +31,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -45,12 +43,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -58,12 +55,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -71,12 +67,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -84,12 +79,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -97,12 +91,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 
@@ -110,12 +103,11 @@
 	"DbgColor" : 15597568,
 	"DbgIndex" : 1,
 	"DbgName" : "Material",
-	"colorAmbient" : [0.0, 0.0, 0.0],
 	"colorDiffuse" : [0.9960784316062927, 0.9215686321258545, 0.7921568751335144],
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"shading" : "Lambert",
 	"specularCoef" : 50,
-	"transparency" : 1.0,
+	"opacity" : 1.0,
 	"vertexColors" : false
 	},
 

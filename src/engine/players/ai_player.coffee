@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { Player } from './player.coffee'
 
 export class AiPlayer extends Player
@@ -35,7 +36,7 @@ export class AiPlayer extends Player
   aiStep: ->
     @chooseTarget() unless @target
     if @target && @target.ship
-      vector = @target.ship.position.clone().subSelf @ship.position
+      vector = @target.ship.position.clone().sub @ship.position
       @angle = Math.atan2(vector.y, vector.x)
       @fire = Math.abs(@ship.rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
     else

@@ -1,26 +1,11 @@
+import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
+import { Static } from '../static.coffee'
 
-class TurretBase
-  constructor: (options) ->
-    @controller = options.controller
-    @universe = options.universe
-
-    @mesh = @buildMesh()
-    @position = @mesh.position = new THREE.Vector3 0, 0, 500
-    if options.position
-      @position.x = @mesh.position.x = options.position.x
-      @position.y = @mesh.position.y = options.position.y
-    @controller.scene.add @mesh
-
-  remove: ->
-    @controller.scene.remove @mesh
-
+class TurretBase extends Static
   buildMesh: ->
-    material = new THREE.MeshFaceMaterial
-    geometry = @controller.geometries['models/turret_base.js']
-    for material in geometry.materials
-      material.shading = THREE.FlatShading
-    new THREE.Mesh geometry, material
+    material = @controller.materials['models/turret_base.js']
+    new THREE.Mesh @controller.geometries['models/turret_base.js'], material
 
 export class Turret extends Movable
   AI_STEP_INTERVAL = 30
@@ -38,18 +23,13 @@ export class Turret extends Movable
     super(options)
     @base = new TurretBase options
     @parent = options.parent
-    @position.x = options.position.x
-    @position.y = options.position.y
 
     @aiStepCounter = 0
     @bulletDelay = 0
 
   buildMesh: ->
-    material = new THREE.MeshFaceMaterial
-    geometry = @controller.geometries['models/turret.js']
-    for material in geometry.materials
-      material.shading = THREE.FlatShading
-    new THREE.Mesh geometry, material
+    material = @controller.materials['models/turret.js']
+    new THREE.Mesh @controller.geometries['models/turret.js'], material
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64
@@ -93,7 +73,7 @@ export class Turret extends Movable
   aiStep: ->
     @chooseTarget() unless @target
     if @target && @target.alive
-      vector = @target.position.clone().subSelf @position
+      vector = @target.position.clone().sub @position
       @angle = Math.atan2(vector.y, vector.x)
       @shouldFire = Math.abs(@rotation - @angle) <= FIRE_ANGLE_DIFF_MAX && vector.length() < FIRE_MAX_DISTANCE
     else
@@ -102,7 +82,7 @@ export class Turret extends Movable
   chooseTarget: ->
     for player in @universe.players
       if player != @parent && player.ship
-        vector = player.ship.position.clone().subSelf @position
+        vector = player.ship.position.clone().sub @position
         if vector.length() < TARGETTING_MAX_DISTANCE
           @target = player.ship
           break

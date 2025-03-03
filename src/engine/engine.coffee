@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { Starfield } from './starfield.coffee'
 import { TrailsStorage } from './trails/trails_storage.coffee'
 import { BulletsStorage } from './bullets/bullets_storage.coffee'
@@ -47,7 +48,7 @@ export class Engine
       @renderer.setSize @width(), @height()
 
     # clear to black background
-    @renderer.setClearColorHex 0x080808, 1
+    @renderer.setClearColor 0x080808, 1
 
     @container.appendChild @renderer.domElement
 
@@ -89,14 +90,16 @@ export class Engine
 
   load: ->
     @geometries = {}
+    @materials = {}
     loader = new THREE.JSONLoader()
     for model in @models
       @loadModel loader, model
 
   loadModel: (loader, model) ->
-    loader.load model, (geometry) =>
+    loader.load model, (geometry, materials) =>
       geometry.computeVertexNormals()
       @geometries[model] = geometry
+      @materials[model] = materials
       if _.size(@geometries) == _.size(@models)
         @continueLoad()
 

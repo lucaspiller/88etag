@@ -1,4 +1,6 @@
+import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
+import { AxisZ } from '../axis'
 
 export class MassDriver extends Movable
   AI_STEP_INTERVAL = 60
@@ -12,8 +14,6 @@ export class MassDriver extends Movable
   constructor: (options) ->
     super(options)
     @parent = options.parent
-    @position.x = options.position.x
-    @position.y = options.position.y
 
     @aiStepCounter = 0
     @fireDelay = 60
@@ -21,7 +21,6 @@ export class MassDriver extends Movable
 
   buildMesh: ->
     material = new THREE.MeshLambertMaterial {
-      ambient: 0x5B3C1D
       color: 0x5B3C1D
     }
     new THREE.Mesh @controller.geometries['models/mass_driver.js'], material
@@ -43,10 +42,10 @@ export class MassDriver extends Movable
 
   fire: ->
     if @fireDelay <= 0
-      vector = @target.position.clone().subSelf @position
+      vector = @target.position.clone().sub @position
       @angle = Math.atan2(vector.y, vector.x)
       if vector.length() < FIRE_MAX_DISTANCE
-        @target.velocity.multiplyScalar(0).addSelf(vector)
+        @target.velocity.multiplyScalar(0).add(vector)
         @fireDelay = 60
         new MassDriverFire {
           controller: @controller
@@ -65,7 +64,7 @@ export class MassDriver extends Movable
   chooseTarget: ->
     for player in @universe.players
       if player != @parent && player.ship
-        vector = player.ship.position.clone().subSelf @position
+        vector = player.ship.position.clone().sub @position
         if vector.length() < FIRE_MAX_DISTANCE
           @target = player.ship
           break
@@ -77,6 +76,8 @@ class MassDriverFire extends Movable
   buildMesh: ->
     material = new THREE.MeshBasicMaterial
     material.color.setRGB(91 / 255, 60 / 255, 29 / 255)
+    material.transparent = true
+    material.opacity = 0.9
     geometry = new THREE.CubeGeometry @vector.length(), 2, 2
     new THREE.Mesh geometry, material
 
@@ -84,10 +85,11 @@ class MassDriverFire extends Movable
     super(options)
     @vector = options.vector
     @parent = options.parent
-    @position.set @parent.position.x, @parent.position.y, @parent.position.z - 10
+
     @rotation = Math.atan2(@vector.y, @vector.x)
-    @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
-    @position.addSelf @vector.multiplyScalar(0.5)
+    @mesh.rotateAboutObjectAxis(AxisZ, @rotation)
+    @position.add @vector.multiplyScalar(0.5)
+
     @lifetime = 10
 
   step: ->

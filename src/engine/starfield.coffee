@@ -1,3 +1,5 @@
+import * as THREE from 'three'
+
 export class Starfield
   PARTICLE_COUNT = 50
   NEAR = 1
@@ -23,13 +25,13 @@ export class Starfield
       @particles.colors.push(color)
 
     # create a really basic material
-    material = new THREE.ParticleBasicMaterial({
+    material = new THREE.PointsMaterial({
       size: 2,
       sizeAttenuation: false,
       vertexColors: true
     })
 
-    @particleSystem = new THREE.ParticleSystem @particles, material
+    @particleSystem = new THREE.Points @particles, material
     @particleSystem.sortParticles = true
     @controller.scene.add @particleSystem
 

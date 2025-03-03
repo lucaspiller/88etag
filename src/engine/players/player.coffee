@@ -1,4 +1,7 @@
+import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
+import { Static } from '../static.coffee'
+import { AxisX, AxisZ } from '../axis'
 
 class PlayerShip extends Movable
   healthRadius: 8
@@ -15,12 +18,11 @@ class PlayerShip extends Movable
     @position.y = @parent.commandCentre.position.y - CommandCentre::radius - @radius - 1
 
     @rotation = Math.PI * 1.5
-    @mesh.rotateAboutObjectAxis(THREE.AxisZ, @rotation)
+    @mesh.rotateAboutObjectAxis(AxisZ, @rotation)
     @bulletDelay = 0
 
   buildMesh: ->
     material = new THREE.MeshLambertMaterial {
-      ambient: 0x5E574B
       color: 0x5E574B
     }
     new THREE.Mesh @controller.geometries['models/ship_basic.js'], material
@@ -38,7 +40,7 @@ class PlayerShip extends Movable
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
     @universe.trails.newShipTrail this
-    @mesh.rotateAboutObjectAxis(THREE.AxisX, Math.PI / 128)
+    @mesh.rotateAboutObjectAxis(AxisX, Math.PI / 128)
 
   backward: ->
     @acceleration.x = -Math.cos(@rotation)
@@ -47,7 +49,7 @@ class PlayerShip extends Movable
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
     @universe.trails.newShipTrail this
-    @mesh.rotateAboutObjectAxis(THREE.AxisX, -Math.PI / 128)
+    @mesh.rotateAboutObjectAxis(AxisX, -Math.PI / 128)
 
   fire: ->
     if @bulletDelay <= 0
@@ -57,7 +59,7 @@ class PlayerShip extends Movable
   step: ->
     @bulletDelay--
 
-    @velocity.addSelf @acceleration
+    @velocity.add @acceleration
     @acceleration.multiplyScalar 0
     speed = @velocity.length()
     if speed > @max_speed
@@ -73,29 +75,18 @@ class PlayerShip extends Movable
     super()
     @parent.respawn()
 
-class CommandCentreInner
+class CommandCentreInner extends Static
   rotationalVelocity: -Math.PI / 512
 
   constructor: (options) ->
-    @controller = options.controller
-    @universe = options.universe
-
-    @mesh = @buildMesh()
-    @position = @mesh.position = new THREE.Vector3 0, 0, 500
-    if options.position
-      @position.x = @mesh.position.x = options.position.x
-      @position.y = @mesh.position.y = options.position.y
-    @controller.scene.add @mesh
-
-  remove: ->
-    @controller.scene.remove @mesh
+    super(options)
 
   buildMesh: ->
-    material = new THREE.MeshFaceMaterial
+    material = @controller.materials['models/command_centre_inner.js']
     new THREE.Mesh @controller.geometries['models/command_centre_inner.js'], material
 
   step: ->
-    @mesh.rotateAboutWorldAxis(THREE.AxisZ, @rotationalVelocity)
+    @mesh.rotateAboutWorldAxis(AxisZ, @rotationalVelocity)
 
 class CommandCentre extends Movable
   mass: 999999999999999999
@@ -109,12 +100,8 @@ class CommandCentre extends Movable
     @parent = options.parent
     @inner = new CommandCentreInner options
 
-    if options.position
-      @position.x = @mesh.position.x = options.position.x
-      @position.y = @mesh.position.y = options.position.y
-
   buildMesh: ->
-    material = new THREE.MeshFaceMaterial
+    material = @controller.materials['models/command_centre.js']
     new THREE.Mesh @controller.geometries['models/command_centre.js'], material
 
   remove: ->
