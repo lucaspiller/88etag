@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { AxisX } from './axis'
+import { rotateAboutWorldAxis } from '../threejs_extensions'
 
 export class HealthBall
   constructor: (options) ->
@@ -17,7 +18,7 @@ export class HealthBall
     material.color.setRGB(0, 25 / 255, 0)
     material.opacity = 0.1
     @outerMesh = new THREE.Mesh geometry, material
-    @outerMesh.rotateAboutWorldAxis(AxisX, Math.PI / 2)
+    rotateAboutWorldAxis(@outerMesh, AxisX, Math.PI / 2)
     @controller.scene.add @outerMesh
 
     geometry = new THREE.CylinderGeometry @radius, @radius, 0.1, 16
@@ -26,7 +27,7 @@ export class HealthBall
     material.color.setRGB(0, 68 / 255, 0)
     material.opacity = 0.8
     @innerMesh = new THREE.Mesh geometry, material
-    @innerMesh.rotateAboutWorldAxis(AxisX, Math.PI / 2)
+    rotateAboutWorldAxis(@innerMesh, AxisX, Math.PI / 2)
     @controller.scene.add @innerMesh
 
   remove: ->

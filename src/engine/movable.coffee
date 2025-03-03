@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { HealthBall } from './healthball.coffee'
-import { AxisZ } from './axis'
+import { AxisZ, AxisY, AxisX } from './axis'
+import { rotateAboutWorldAxis } from '../threejs_extensions'
 
 export class Movable
   COEF_OF_RESTITUTION: 0.75
@@ -18,7 +19,9 @@ export class Movable
     @universe = options.universe
 
     @mesh = @buildMesh()
-    @mesh.rotateAboutWorldAxis AxisZ, 0.001 # hack to fix a bug in ThreeJS?
+    if !@mesh || !@mesh.isObject3D
+      console.error("buildMesh() must return a Object3D, Mesh or Group", @mesh, this)
+
     @controller.scene.add @mesh
 
     @velocity = new THREE.Vector3 0, 0, 0
@@ -65,7 +68,7 @@ export class Movable
     @position.add @velocity
 
     if Math.abs(@rotationalVelocity) > 0
-      @mesh.rotateAboutWorldAxis(AxisZ, @rotationalVelocity)
+      rotateAboutWorldAxis(@mesh, AxisZ, @rotationalVelocity)
       @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
 
     if @solid

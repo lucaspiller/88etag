@@ -1,18 +1,30 @@
 import * as THREE from 'three'
 
-THREE.Mesh.prototype.rotateAboutObjectAxis = function(axis: THREE.Vector3, radians: number) {
-  var rotationMatrix;
-  rotationMatrix = new THREE.Matrix4();
-  rotationMatrix.makeRotationAxis(axis.normalize(), radians);
-  this.matrix.multiply(rotationMatrix);
-  return this.rotation.setFromRotationMatrix(this.matrix);
+export function rotateAboutObjectAxis(mesh: THREE.Mesh, axis: THREE.Vector3, radians: number) {
+  mesh.rotateOnAxis(axis, radians)
+  //var rotationMatrix;
+  //rotationMatrix = new THREE.Matrix4();
+  //rotationMatrix.makeRotationAxis(axis.normalize(), radians);
+  //mesh.matrix.multiply(rotationMatrix);
+  //return mesh.rotation.setFromRotationMatrix(mesh.matrix);
 };
 
-THREE.Mesh.prototype.rotateAboutWorldAxis = function(axis: THREE.Vector3, radians: number) {
-  var rotationMatrix;
-  rotationMatrix = new THREE.Matrix4();
-  rotationMatrix.makeRotationAxis(axis.normalize(), radians);
-  rotationMatrix.multiply(this.matrix);
-  this.matrix = rotationMatrix;
-  return this.rotation.setFromRotationMatrix(this.matrix);
+export function rotateAboutWorldAxis(mesh: THREE.Mesh, axis: THREE.Vector3, radians: number) {
+  mesh.rotateOnWorldAxis(axis, radians)
+  //var rotWorldMatrix = new THREE.Matrix4();
+  //rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+  
+  //// Save the object's original matrix
+  //var originalMatrix = mesh.matrix.clone();
+  
+  //// Set to the rotation matrix
+  //mesh.matrix = rotWorldMatrix;
+  
+  //// Apply the original position/rotation/scale
+  //mesh.matrix.multiply(originalMatrix);
+  
+  //// Update rotation from matrix
+  //mesh.rotation.setFromRotationMatrix(mesh.matrix);
+  
+  //return mesh.rotation;
 };

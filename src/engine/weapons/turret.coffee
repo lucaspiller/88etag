@@ -4,8 +4,7 @@ import { Static } from '../static.coffee'
 
 class TurretBase extends Static
   buildMesh: ->
-    material = @controller.materials['models/turret_base.js']
-    new THREE.Mesh @controller.geometries['models/turret_base.js'], material
+    @controller.meshes['models/turret_base.glb'].clone()
 
 export class Turret extends Movable
   AI_STEP_INTERVAL = 30
@@ -28,8 +27,7 @@ export class Turret extends Movable
     @bulletDelay = 0
 
   buildMesh: ->
-    material = @controller.materials['models/turret.js']
-    new THREE.Mesh @controller.geometries['models/turret.js'], material
+    @controller.meshes['models/turret.glb'].clone()
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64

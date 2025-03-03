@@ -1,5 +1,6 @@
 import { Movable } from '../movable.coffee'
 import { AxisZ } from '../axis'
+import { rotateAboutObjectAxis } from '../../threejs_extensions'
 
 export class Bullet extends Movable
   HIDDEN_Z = 2000
@@ -13,7 +14,7 @@ export class Bullet extends Movable
   setup: (@parent) ->
     @position.set @parent.position.x, @parent.position.y, @parent.position.z - 10
     @rotation = @parent.rotation - (Math.PI * 1.5)
-    @mesh.rotateAboutObjectAxis(AxisZ, @rotation)
+    rotateAboutObjectAxis(@mesh, AxisZ, @rotation)
     @velocity.x = Math.cos @parent.rotation
     @velocity.y = Math.sin @parent.rotation
     @alive = true
@@ -21,7 +22,7 @@ export class Bullet extends Movable
   remove: ->
     @alive = false
     @position.z = HIDDEN_Z
-    @mesh.rotateAboutObjectAxis(AxisZ, -@rotation)
+    rotateAboutObjectAxis(@mesh, AxisZ, -@rotation)
 
   step: ->
     if @alive

@@ -1,5 +1,3 @@
-import 'three'
-import './threejs_extensions'
 import { GameMenu } from './game_menu.coffee'
 import { gameOver as gameOverTemplate } from './templates'
 import { Engine } from './engine/engine.coffee'

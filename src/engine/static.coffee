@@ -4,6 +4,8 @@ export class Static
     @universe = options.universe
 
     @mesh = @buildMesh()
+    if !@mesh || !@mesh.isObject3D
+      console.error("buildMesh() must return a Object3D, Mesh or Group", @mesh, this)
 
     @position = @mesh.position
     @position.set(0, 0, 500)

@@ -1,9 +1,11 @@
 import * as THREE from 'three'
+
 import { Starfield } from './starfield.coffee'
 import { TrailsStorage } from './trails/trails_storage.coffee'
 import { BulletsStorage } from './bullets/bullets_storage.coffee'
 import { LocalPlayer } from './players/local_player.coffee'
 import { AiPlayer } from './players/ai_player.coffee'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 export class Engine
   VIEW_ANGLE = 45
@@ -14,12 +16,12 @@ export class Engine
   disposed: false
 
   models: [
-    'models/ship_basic.js',
-    'models/command_centre.js',
-    'models/command_centre_inner.js',
-    'models/turret.js'
-    'models/turret_base.js',
-    'models/mass_driver.js'
+    'models/ship_basic.glb',
+    'models/command_centre.glb',
+    'models/command_centre_inner.glb',
+    'models/turret.glb'
+    'models/turret_base.glb',
+    'models/mass_driver.glb'
   ]
 
   constructor: (@config) ->
@@ -89,23 +91,25 @@ export class Engine
     @camera.position.y + (range_y) / 2
 
   load: ->
-    @geometries = {}
-    @materials = {}
-    loader = new THREE.JSONLoader()
+    @meshes = {}
+
+    loader = new GLTFLoader()
     for model in @models
-      @loadModel loader, model
+      await @loadModel loader, model
 
-  loadModel: (loader, model) ->
-    loader.load model, (geometry, materials) =>
-      geometry.computeVertexNormals()
-      @geometries[model] = geometry
-      @materials[model] = materials
-      if _.size(@geometries) == _.size(@models)
-        @continueLoad()
-
-  continueLoad: ->
     @universe = new Universe this
     @render()
+
+  loadModel: (loader, model) ->
+    new Promise (resolve) =>
+      loader.load model,
+        (gltf) =>
+          scene = gltf.scene
+          @meshes[model] = scene.children[0]
+          resolve()
+        undefined,
+        (error) =>
+          console.error("Error loading model: #{model}", error)
 
   render: ->
     return if @disposed

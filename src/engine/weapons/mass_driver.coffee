@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
 import { AxisZ } from '../axis'
+import { rotateAboutObjectAxis } from '../../threejs_extensions'
 
 export class MassDriver extends Movable
   AI_STEP_INTERVAL = 60
@@ -20,14 +21,7 @@ export class MassDriver extends Movable
     @rotationalVelocity = Math.PI / 512
 
   buildMesh: ->
-    material = new THREE.MeshLambertMaterial {
-      color: 0x5B3C1D
-    }
-    new THREE.Mesh @controller.geometries['models/mass_driver.js'], material
-
-  remove: ->
-    super()
-    @base.remove()
+    @controller.meshes['models/mass_driver.glb'].clone()
 
   step: ->
     super()
@@ -87,7 +81,7 @@ class MassDriverFire extends Movable
     @parent = options.parent
 
     @rotation = Math.atan2(@vector.y, @vector.x)
-    @mesh.rotateAboutObjectAxis(AxisZ, @rotation)
+    rotateAboutObjectAxis(@mesh, AxisZ, @rotation)
     @position.add @vector.multiplyScalar(0.5)
 
     @lifetime = 10

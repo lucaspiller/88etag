@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
 import { Static } from '../static.coffee'
-import { AxisX, AxisZ } from '../axis'
+import { AxisX, AxisZ, AxisY } from '../axis'
+import { rotateAboutObjectAxis, rotateAboutWorldAxis } from '../../threejs_extensions.ts'
 
 class PlayerShip extends Movable
   healthRadius: 8
@@ -18,14 +19,11 @@ class PlayerShip extends Movable
     @position.y = @parent.commandCentre.position.y - CommandCentre::radius - @radius - 1
 
     @rotation = Math.PI * 1.5
-    @mesh.rotateAboutObjectAxis(AxisZ, @rotation)
+    rotateAboutObjectAxis(@mesh, AxisZ, @rotation)
     @bulletDelay = 0
 
   buildMesh: ->
-    material = new THREE.MeshLambertMaterial {
-      color: 0x5E574B
-    }
-    new THREE.Mesh @controller.geometries['models/ship_basic.js'], material
+    @controller.meshes['models/ship_basic.glb'].clone()
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64
@@ -40,7 +38,7 @@ class PlayerShip extends Movable
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
     @universe.trails.newShipTrail this
-    @mesh.rotateAboutObjectAxis(AxisX, Math.PI / 128)
+    rotateAboutObjectAxis(@mesh, AxisX, Math.PI / 128)
 
   backward: ->
     @acceleration.x = -Math.cos(@rotation)
@@ -49,7 +47,7 @@ class PlayerShip extends Movable
     if accel > @max_accel
       @acceleration.multiplyScalar @max_accel / accel
     @universe.trails.newShipTrail this
-    @mesh.rotateAboutObjectAxis(AxisX, -Math.PI / 128)
+    rotateAboutObjectAxis(@mesh, AxisX, -Math.PI / 128)
 
   fire: ->
     if @bulletDelay <= 0
@@ -82,11 +80,10 @@ class CommandCentreInner extends Static
     super(options)
 
   buildMesh: ->
-    material = @controller.materials['models/command_centre_inner.js']
-    new THREE.Mesh @controller.geometries['models/command_centre_inner.js'], material
+    @controller.meshes['models/command_centre_inner.glb'].clone()
 
   step: ->
-    @mesh.rotateAboutWorldAxis(AxisZ, @rotationalVelocity)
+    rotateAboutWorldAxis(@mesh, AxisZ, @rotationalVelocity)
 
 class CommandCentre extends Movable
   mass: 999999999999999999
@@ -101,8 +98,7 @@ class CommandCentre extends Movable
     @inner = new CommandCentreInner options
 
   buildMesh: ->
-    material = @controller.materials['models/command_centre.js']
-    new THREE.Mesh @controller.geometries['models/command_centre.js'], material
+    @controller.meshes['models/command_centre.glb'].clone()
 
   remove: ->
     super()
