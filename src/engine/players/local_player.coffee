@@ -59,3 +59,6 @@ export class LocalPlayer extends Player
         position: position,
         parent: this
       }
+
+  isLocal: ->
+    true

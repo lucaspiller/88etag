@@ -70,6 +70,9 @@ class PlayerShip extends Movable
     super()
 
   explode: ->
+    if @parent.isLocal()
+      @controller.startCameraTracking(@velocity.clone())
+    
     super()
     @parent.respawn()
 
@@ -170,6 +173,10 @@ export class Player
   buildShip: ->
     @ship = new PlayerShip @options
 
+    if @isLocal()
+      @controller.disableDeathEffect()
+      @controller.stopCameraTracking()
+
   step: ->
     @indicator.step()
     unless @ship
@@ -179,12 +186,25 @@ export class Player
         @respawnDelay--
 
   respawn: ->
+    if @isLocal()
+      @controller.startCameraTracking(@ship.velocity.clone())
+      @controller.enableDeathEffect()
+
     @ship = false
     @respawnDelay = 300
+
 
   remove: ->
     @commandCentre.remove()
     @indicator.remove()
     @ship.remove()
     @ship = false
+    
+    if @isLocal()
+      @controller.stopCameraTracking()
+      
     @universe.removePlayer this
+
+  isLocal: ->
+    # Overwritten in LocalPlayer class
+    false

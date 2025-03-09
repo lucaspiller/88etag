@@ -8,12 +8,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "three": "^0.115.0",
+    "three": "^0.150.0",
     "typescript": "^5.8.2",
     "vite": "^6.2.0",
     "vite-plugin-coffee3": "^1.0.1"
   },
   "devDependencies": {
-    "@types/three": "^0.125.0"
+    "@types/three": "^0.150.0"
   }
 }

@@ -6,6 +6,12 @@ import { BulletsStorage } from './bullets/bullets_storage.coffee'
 import { LocalPlayer } from './players/local_player.coffee'
 import { AiPlayer } from './players/ai_player.coffee'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+# Import post-processing modules
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js'
 
 export class Engine
   VIEW_ANGLE = 45
@@ -28,7 +34,13 @@ export class Engine
     @container = @config.container
     @setupRenderer()
     @setupScene()
+    @setupPostProcessing()
     @load()
+    
+    # Camera tracking when ship explodes
+    @cameraVelocity = new THREE.Vector3(0, 0, 0)
+    @isTrackingLastVelocity = false
+    @cameraTrackingDamping = 0.99 # Slow down factor per frame
 
   width: ->
     window.innerWidth
@@ -37,20 +49,15 @@ export class Engine
     window.innerHeight
 
   setupRenderer: ->
-    if window.location.hash == "#slow"
-      @container.className = 'double'
+    console.log('THREE', THREE.REVISION)
 
-      @renderer = new THREE.WebGLRenderer
-      @renderer.setSize @width() / 2, @height() / 2
-      @renderer.sortObjects = false
-    else
-      @renderer = new THREE.WebGLRenderer {
-        antialias: true # smoother output
-      }
-      @renderer.setSize @width(), @height()
+    @renderer = new THREE.WebGLRenderer {
+      antialias: true
+    }
+    @renderer.setSize @width(), @height()
 
     # clear to black background
-    @renderer.setClearColor 0x080808, 1
+    @renderer.setClearColor 0x0B1220, 1
 
     @container.appendChild @renderer.domElement
 
@@ -72,6 +79,49 @@ export class Engine
     @scene.add new THREE.AmbientLight 0x999999
     @light = new THREE.PointLight 0xffffff
     @scene.add @light
+
+  setupPostProcessing: ->
+    # Create the effect composer
+    @composer = new EffectComposer(@renderer)
+    
+    # Add the basic render pass
+    renderPass = new RenderPass(@scene, @camera)
+    @composer.addPass(renderPass)
+
+  # Enable death effect (blur and ghosting)
+  enableDeathEffect: ->
+    return if @isDeathEffectActive
+
+    @isDeathEffectActive = true
+
+    # Create and add the afterimage pass (for ghosting effect)
+    @afterimagePass = new AfterimagePass(1.0)
+    @afterimagePass.enabled = true
+    @composer.addPass(@afterimagePass)
+    
+    # Create and add the bloom pass (for glow/blur)
+    @bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(@width(), @height()),
+      0.1,   # strength
+      0.4,   # radius
+      0.85   # threshold
+    )
+    @bloomPass.enabled = false  # Disabled by default
+    @composer.addPass(@bloomPass)
+
+    @bloomStrengthTarget = 1.5
+    
+  # Disable death effect
+  disableDeathEffect: ->
+    return unless @isDeathEffectActive
+
+    @isDeathEffectActive = false
+
+    @composer.removePass(@afterimagePass)
+    @composer.removePass(@bloomPass)
+
+    @afterimagePass.dispose()
+    @bloomPass.dispose()
 
   screen_range: (depth) ->
     range_x = Math.tan(@camera.fov * Math.PI / 180) * (@camera.position.z - depth) * 2
@@ -117,11 +167,37 @@ export class Engine
 
     @universe.checkCollisions()
     @universe.step()
+    
+    # Update camera position if tracking last velocity
+    if @isTrackingLastVelocity
+      @camera.position.add(@cameraVelocity)
+      @cameraVelocity.multiplyScalar(@cameraTrackingDamping)
+      
+      # Stop tracking if velocity becomes very small
+      if @cameraVelocity.lengthSq() < 0.001
+        @isTrackingLastVelocity = false
+        @cameraVelocity.set(0, 0, 0)
 
     @light.position.set @camera.position.x, @camera.position.y, CAMERA_Z * 10
-    @renderer.render @scene, @camera
+    
+    # Update bloom strength animation if death effect is active
+    if @isDeathEffectActive and @bloomPass.strength < @bloomStrengthTarget
+      @bloomPass.strength += 0.01
+      
+    # Use the effect composer instead of direct renderer
+    @composer.render()
 
     @stats.update() if @stats
+
+  # Start tracking camera along the specified velocity vector
+  startCameraTracking: (velocity) ->
+    @cameraVelocity.copy(velocity)
+    @isTrackingLastVelocity = true
+    
+  # Stop camera tracking
+  stopCameraTracking: ->
+    @isTrackingLastVelocity = false
+    @cameraVelocity.set(0, 0, 0)
 
   dispose: ->
     @universe.unbindKeys()
