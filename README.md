@@ -10,6 +10,7 @@ A demo is availabe on the [GitHub pages](http://lucaspiller.github.com/88etag/) 
     D      - Fire
     Q      - Construct turret
     W      - Construct mass driver
+    P      - Construct power plant
 
 There is currently no scoring or end of game, however technically once your control centre has been destroyed the game is over.
 

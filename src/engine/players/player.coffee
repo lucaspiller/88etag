@@ -3,6 +3,7 @@ import { Movable } from '../movable.coffee'
 import { Static } from '../static.coffee'
 import { AxisX, AxisZ, AxisY } from '../axis'
 import { rotateAboutObjectAxis, rotateAboutWorldAxis } from '../../threejs_extensions.ts'
+import { PowerRadiusVisualizer } from '../structures/power_radius_visualizer.coffee'
 
 BULLET_DELAY = 30
 
@@ -96,11 +97,19 @@ class CommandCentre extends Movable
   maxHealth: 10000
   radius: 50
   rotationalVelocity: Math.PI / 512
+  powerRadius: 150
 
   constructor: (options) ->
     super(options)
     @parent = options.parent
     @inner = new CommandCentreInner options
+    
+    # Create power radius visualization
+    @powerVisualizer = new PowerRadiusVisualizer {
+      controller: @controller,
+      position: @position,
+      radius: @powerRadius
+    }
 
   buildMesh: ->
     @controller.meshes['models/command_centre.glb'].clone()
@@ -108,6 +117,8 @@ class CommandCentre extends Movable
   remove: ->
     super()
     @inner.remove()
+    # Remove power radius visualization
+    @powerVisualizer.remove()
 
   explode: ->
     @parent.remove()
@@ -116,6 +127,16 @@ class CommandCentre extends Movable
     super()
     @inner.position.set @position.x, @position.y, @position.z
     @inner.step()
+    
+    # Update power radius visualization position
+    @powerVisualizer.update(@position)
+    
+  # Check if a position is within power radius
+  providesEnergyTo: (position) ->
+    x = @position.x - position.x
+    y = @position.y - position.y
+    distance = Math.sqrt(x * x + y * y)
+    return distance <= @powerRadius
 
 class Indicator
   constructor: (options) ->

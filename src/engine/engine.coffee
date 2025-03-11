@@ -5,6 +5,7 @@ import { TrailsStorage } from './trails/trails_storage.coffee'
 import { BulletsStorage } from './bullets/bullets_storage.coffee'
 import { LocalPlayer } from './players/local_player.coffee'
 import { AiPlayer } from './players/ai_player.coffee'
+import { PowerPlant } from './structures/power_plant.coffee'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 # Import post-processing modules
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
@@ -25,9 +26,9 @@ export class Engine
     'models/ship_basic.glb',
     'models/command_centre.glb',
     'models/command_centre_inner.glb',
-    'models/turret.glb'
+    'models/turret.glb',
     'models/turret_base.glb',
-    'models/mass_driver.glb'
+    'models/mass_driver.glb',
   ]
 
   constructor: (@config) ->
@@ -286,3 +287,20 @@ class Universe
         if m1.overlapsPosition(position, radius)
           return m1
     false
+
+  # Add a method to check if a position is powered by any power source
+  isPowered: (position) ->
+    # Check if any power plant provides energy to this position
+    for mass in @masses
+      if mass.alive && (mass.providesEnergyTo? && typeof mass.providesEnergyTo == 'function')
+        if mass.providesEnergyTo(position)
+          return true
+    return false
+
+  # Get all power sources in the universe
+  getPowerSources: ->
+    sources = []
+    for mass in @masses
+      if mass.alive && (mass.providesEnergyTo? && typeof mass.providesEnergyTo == 'function')
+        sources.push(mass)
+    return sources

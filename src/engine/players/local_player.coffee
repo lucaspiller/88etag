@@ -1,6 +1,7 @@
 import { Player } from './player.coffee'
 import { Turret } from '../weapons/turret.coffee'
 import { MassDriver } from '../weapons/mass_driver.coffee'
+import { PowerPlant } from '../structures/power_plant.coffee'
 
 export class LocalPlayer extends Player
   step: ->
@@ -24,6 +25,9 @@ export class LocalPlayer extends Player
           when 87 # w
             @buildMassDriver()
             @universe.keys = _.without @universe.keys, 87 # TODO hack
+          when 80 # p
+            @buildPowerPlant()
+            @universe.keys = _.without @universe.keys, 80 # TODO hack
 
       @controller.camera.position.x = @ship.position.x
       @controller.camera.position.y = @ship.position.y
@@ -54,6 +58,19 @@ export class LocalPlayer extends Player
       console.log('mass driver would overlap', overlap)
     else
       massdriver = new MassDriver {
+        universe: @universe,
+        controller: @controller,
+        position: position,
+        parent: this
+      }
+
+  buildPowerPlant: ->
+    position = @positionFor(PowerPlant)
+    overlap = @universe.anythingOverlaps(position, PowerPlant::radius)
+    if overlap
+      console.log('power plant would overlap', overlap)
+    else
+      powerPlant = new PowerPlant {
         universe: @universe,
         controller: @controller,
         position: position,
