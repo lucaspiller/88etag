@@ -4,6 +4,8 @@ import { Static } from '../static.coffee'
 import { AxisX, AxisZ, AxisY } from '../axis'
 import { rotateAboutObjectAxis, rotateAboutWorldAxis } from '../../threejs_extensions.ts'
 
+BULLET_DELAY = 30
+
 class PlayerShip extends Movable
   healthRadius: 8
   maxHealth: 1000
@@ -52,7 +54,7 @@ class PlayerShip extends Movable
   fire: ->
     if @bulletDelay <= 0
       @universe.bullets.newShipBullet this
-      @bulletDelay = 10
+      @bulletDelay = BULLET_DELAY
 
   step: ->
     @bulletDelay--

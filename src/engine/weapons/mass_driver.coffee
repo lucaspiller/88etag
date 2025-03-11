@@ -41,7 +41,7 @@ export class MassDriver extends Movable
       if vector.length() < FIRE_MAX_DISTANCE
         @target.velocity.multiplyScalar(0).add(vector)
         @fireDelay = 60
-        new MassDriverFire {
+        new MassDriverBeam {
           controller: @controller
           universe: @universe,
           vector: vector,
@@ -63,26 +63,30 @@ export class MassDriver extends Movable
           @target = player.ship
           break
 
-class MassDriverFire extends Movable
+class MassDriverBeam extends Movable
   solid: false
   mass: 0
 
-  buildMesh: ->
+  buildMesh: (options) ->
     material = new THREE.MeshBasicMaterial
     material.color.setRGB(91 / 255, 60 / 255, 29 / 255)
     material.transparent = true
     material.opacity = 0.9
-    geometry = new THREE.CubeGeometry @vector.length(), 2, 2
+    geometry = new THREE.BoxGeometry options.vector.length(), 2, 2
     new THREE.Mesh geometry, material
 
   constructor: (options) ->
     super(options)
+
     @vector = options.vector
     @parent = options.parent
 
+    @position.copy(@parent.position)
+    
     @rotation = Math.atan2(@vector.y, @vector.x)
     rotateAboutObjectAxis(@mesh, AxisZ, @rotation)
-    @position.add @vector.multiplyScalar(0.5)
+    
+    @position.add(@vector.clone().normalize().multiplyScalar(@vector.length() / 2))
 
     @lifetime = 10
 

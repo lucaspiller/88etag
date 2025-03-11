@@ -18,7 +18,7 @@ export class Movable
     @controller = options.controller
     @universe = options.universe
 
-    @mesh = @buildMesh()
+    @mesh = @buildMesh(options)
     if !@mesh || !@mesh.isObject3D
       console.error("buildMesh() must return a Object3D, Mesh or Group", @mesh, this)
 
