@@ -35,7 +35,7 @@ export class Factory extends Movable
         new THREE.Vector2(18, 2),
         new THREE.Vector2(11, 2)
     ]
-    ringGeometry = new THREE.LatheGeometry(innerRingPoints, 32)
+    ringGeometry = new THREE.LatheGeometry(innerRingPoints, 16)
     @innerRingMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 })
     innerRing = new THREE.Mesh(ringGeometry, @innerRingMaterial)
     rotateAboutWorldAxis(innerRing, AxisX, Math.PI / 2)
@@ -48,7 +48,7 @@ export class Factory extends Movable
         new THREE.Vector2(23, 5),
         new THREE.Vector2(20, 5)
     ]
-    outerRingGeometry = new THREE.LatheGeometry(outerRingPoints, 32)
+    outerRingGeometry = new THREE.LatheGeometry(outerRingPoints, 16)
     @outerRingMaterial = new THREE.MeshLambertMaterial({ 
       color: 0x000000,
       side: THREE.DoubleSide

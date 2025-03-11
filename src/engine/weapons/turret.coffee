@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import { Movable } from '../movable.coffee'
 import { Static } from '../static.coffee'
 
+TURRET_ACTIVE_OPACITY = 1.0
+TURRET_INACTIVE_OPACITY = 0.2
+
 class TurretBase extends Static
   buildMesh: ->
     @controller.meshes['models/turret_base.glb'].clone()
@@ -25,9 +28,43 @@ export class Turret extends Movable
 
     @aiStepCounter = 0
     @bulletDelay = 0
+    @isPowered = false
+    
+    # Apply material modifications to show power state
+    @setupMaterials()
 
   buildMesh: ->
     @controller.meshes['models/turret.glb'].clone()
+    
+  setupMaterials: ->
+    # Apply material modifications to both turret and base
+    @mesh.traverse (child) =>
+      if child.isMesh && child.material
+        # Store original material for reference
+        if Array.isArray(child.material)
+          child.material = child.material.map (mat) =>
+            newMat = mat.clone()
+            newMat.transparent = true
+            newMat.opacity = TURRET_INACTIVE_OPACITY
+            return newMat
+        else
+          child.material = child.material.clone()
+          child.material.transparent = true
+          child.material.opacity = TURRET_INACTIVE_OPACITY
+    
+    # Do the same for base
+    @base.mesh.traverse (child) =>
+      if child.isMesh && child.material
+        if Array.isArray(child.material)
+          child.material = child.material.map (mat) =>
+            newMat = mat.clone()
+            newMat.transparent = true
+            newMat.opacity = TURRET_INACTIVE_OPACITY
+            return newMat
+        else
+          child.material = child.material.clone()
+          child.material.transparent = true
+          child.material.opacity = TURRET_INACTIVE_OPACITY
 
   rotateLeft: ->
     @rotationalVelocity = Math.PI / 64
@@ -42,29 +79,63 @@ export class Turret extends Movable
     super()
     @base.remove()
 
+  updatePowerState: ->
+    # Check if turret is powered
+    @isPowered = @universe.isPowered(@position)
+    
+    # Update materials based on power state
+    opacity = if @isPowered then TURRET_ACTIVE_OPACITY else TURRET_INACTIVE_OPACITY
+    
+    # Update turret materials
+    @mesh.traverse (child) =>
+      if child.isMesh && child.material
+        if Array.isArray(child.material)
+          child.material.forEach (mat) -> mat.opacity = opacity
+        else
+          child.material.opacity = opacity
+    
+    # Update base materials
+    @base.mesh.traverse (child) =>
+      if child.isMesh && child.material
+        if Array.isArray(child.material)
+          child.material.forEach (mat) -> mat.opacity = opacity
+        else
+          child.material.opacity = opacity
+
   step: ->
     super()
-    if @aiStepCounter <= 0
-      @aiStep()
-      @aiStepCounter = AI_STEP_INTERVAL
-    else
-      @aiStepCounter--
+    
+    # Update power state
+    @updatePowerState()
+    
+    # Only perform AI and targeting if powered
+    if @isPowered
+      if @aiStepCounter <= 0
+        @aiStep()
+        @aiStepCounter = AI_STEP_INTERVAL
+      else
+        @aiStepCounter--
 
-    if Math.abs(@rotation - @angle) > ROTATE_ANGLE_DIFF_MAX
-      if @rotation > @angle
-        @rotateRight()
-      else if @rotation < @angle
-        @rotateLeft()
+      if Math.abs(@rotation - @angle) > ROTATE_ANGLE_DIFF_MAX
+        if @rotation > @angle
+          @rotateRight()
+        else if @rotation < @angle
+          @rotateLeft()
+      else
+        @rotateStop()
+
+      @bulletDelay--
+      @fire() if @shouldFire
     else
+      # When not powered, clear target and stop rotation
+      @target = null
+      @shouldFire = false
       @rotateStop()
-
-    @bulletDelay--
-    @fire() if @shouldFire
 
     @base.position.set @position.x, @position.y, @position.z
 
   fire: ->
-    if @bulletDelay <= 0
+    if @bulletDelay <= 0 && @isPowered
       @universe.bullets.newTurretBullet this
       @bulletDelay = 150
 

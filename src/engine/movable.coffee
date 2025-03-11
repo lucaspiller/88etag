@@ -13,6 +13,7 @@ export class Movable
   radius: 10
   rotationalVelocity: 0
   alive: true
+  rotationEnabled: true
 
   constructor: (options) ->
     @controller = options.controller
@@ -67,7 +68,7 @@ export class Movable
     @velocity.multiplyScalar(0.99)
     @position.add @velocity
 
-    if Math.abs(@rotationalVelocity) > 0
+    if @rotationEnabled && Math.abs(@rotationalVelocity) > 0
       rotateAboutWorldAxis(@mesh, AxisZ, @rotationalVelocity)
       @rotation = (@rotation + @rotationalVelocity) % (Math.PI * 2)
 
