@@ -28,10 +28,10 @@ export class PowerPlant extends Movable
     
     # Create the main body (yellow tube)
     bodyPoints = [
-        new THREE.Vector2(10, -4),
+        new THREE.Vector2(11, -4),
         new THREE.Vector2(18, -4),
         new THREE.Vector2(18, 4),
-        new THREE.Vector2(10, 4)
+        new THREE.Vector2(11, 4)
     ]
 
     bodyGeometry = new THREE.LatheGeometry(bodyPoints, 16)
@@ -46,10 +46,10 @@ export class PowerPlant extends Movable
     
     # Create the rings
     ringPoints = [
-        new THREE.Vector2(24, -1),
-        new THREE.Vector2(26, -1),
-        new THREE.Vector2(26, 1),
-        new THREE.Vector2(24, 1)
+        new THREE.Vector2(22, -2),
+        new THREE.Vector2(26, -2),
+        new THREE.Vector2(26, 2),
+        new THREE.Vector2(22, 2)
     ]
     ringGeometry = new THREE.LatheGeometry(ringPoints, 32)
     ringMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF })

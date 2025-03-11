@@ -2,6 +2,7 @@ import { Player } from './player.coffee'
 import { Turret } from '../weapons/turret.coffee'
 import { MassDriver } from '../weapons/mass_driver.coffee'
 import { PowerPlant } from '../structures/power_plant.coffee'
+import { Factory } from '../structures/factory.coffee'
 
 export class LocalPlayer extends Player
   step: ->
@@ -28,6 +29,9 @@ export class LocalPlayer extends Player
           when 80 # p
             @buildPowerPlant()
             @universe.keys = _.without @universe.keys, 80 # TODO hack
+          when 70 # f
+            @buildFactory()
+            @universe.keys = _.without @universe.keys, 70 # TODO hack
 
       @controller.camera.position.x = @ship.position.x
       @controller.camera.position.y = @ship.position.y
@@ -71,6 +75,19 @@ export class LocalPlayer extends Player
       console.log('power plant would overlap', overlap)
     else
       powerPlant = new PowerPlant {
+        universe: @universe,
+        controller: @controller,
+        position: position,
+        parent: this
+      }
+
+  buildFactory: ->
+    position = @positionFor(Factory)
+    overlap = @universe.anythingOverlaps(position, Factory::radius)
+    if overlap
+      console.log('factory would overlap', overlap)
+    else
+      factory = new Factory {
         universe: @universe,
         controller: @controller,
         position: position,

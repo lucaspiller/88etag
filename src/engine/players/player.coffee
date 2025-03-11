@@ -191,6 +191,7 @@ export class Player
     @controller = @options.controller
     @commandCentre = new CommandCentre @options
     @indicator = new Indicator @options
+    @resources = 0  # Initialize resources
     @buildShip()
 
   buildShip: ->
